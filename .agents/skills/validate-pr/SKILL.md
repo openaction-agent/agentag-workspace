@@ -116,8 +116,10 @@ For `citipo/openaction-europe` only:
    the PR body. If needed, compare it with the copy in the linked Linear issue
    or comment, but prefer the current PR body for the current implementation.
 2. Use the existing French journey only when it names every required app,
-   exact fixture or test record, navigation path, UI action, and visible
-   expected result. Preserve its sequence and data exactly.
+   fixture account and permission, navigation path, UI action, and visible
+   expected result. For every prerequisite record, require either an exact
+   verified fixture or test record, or complete safe UI instructions to create
+   run-owned temporary data. Preserve its sequence and data exactly.
 3. If the section is absent or unusable, design a French journey from the
    accepted Linear behavior, PR diff and body, relevant current code, and
    verified safe fixtures. Inspect fixture definitions before naming a record;
@@ -126,8 +128,9 @@ For `citipo/openaction-europe` only:
    or edge path, and the smallest adjacent regression paths justified by the
    diff. Keep every step observable through the UI and identify the expected
    visible result.
-5. If a required fixture, account role, product decision, or safe action
-   remains unknown, mark the affected path blocked instead of improvising.
+5. If a required fixture, account role, product decision, safe action, or
+   complete data-creation instruction remains unknown, mark the affected path
+   blocked instead of improvising.
 
 ## Resolve the target environment
 
@@ -165,30 +168,34 @@ For `citipo/openaction-europe` only:
    form, and confirm that the expected organization and fixture records are
    accessible before executing the journey. Lack of pre-existing browser state
    alone is never a blocker.
-3. Follow the planned
-   navigation, actions, and fixture data exactly through visible UI controls.
+3. Create any journey-prescribed run-owned temporary data through the stated
+   visible UI steps. Use the specified non-sensitive unique value, verify the
+   stated setup result, and record the value internally before continuing.
+   Do not substitute a shared fixture, guess missing fields, or use an API.
+4. Follow the planned navigation, actions, and fixture or run-owned data
+   exactly through visible UI controls.
    Do not use JavaScript evaluation, storage edits, request mocking, or direct
    API calls to bypass application behavior.
-4. After every meaningful action, verify the expected visible state with a
+5. After every meaningful action, verify the expected visible state with a
    focused snapshot or read-only element inspection. Check persistence after
    navigation or reload when it is part of the accepted behavior.
-5. Run the relevant adjacent regression paths in the same way. Keep them
+6. Run the relevant adjacent regression paths in the same way. Keep them
    proportional to the changed area; do not broaden validation into a generic
    product tour.
-6. After each path, inspect `playwright-cli console` for errors and
+7. After each path, inspect `playwright-cli console` for errors and
    `playwright-cli requests` for failed requests. Inspect relevant request
    details and correlate them with the action. Distinguish harmless or known
    preview noise from evidence of an introduced defect; do not silently ignore
    either.
-7. Capture concise evidence: application and URL, exact fixture, key actions,
-   final visible outcome, relevant console errors, failed requests, and a
-   focused screenshot or snapshot when it materially supports the result.
+8. Capture concise evidence: application and URL, fixture or run-owned data,
+   key actions, final visible outcome, relevant console errors, failed
+   requests, and a focused screenshot or snapshot when it materially supports
+   the result.
    Exclude tokens, credentials, personal data, and unrelated internal logs.
-8. If the journey creates data, use a unique non-sensitive test value and
-   record it. Clean up only data created by this run, only through a safe
-   preview UI path, and only when cleanup cannot hide the failure. Never delete
-   a shared fixture or pre-existing record.
-9. Close every named browser session. Do not leave authentication-state files
+9. Do not delete run-owned data without the user's confirmation. Never delete
+   a shared fixture or pre-existing record. Record the created data so that a
+   confirmed cleanup can target it precisely.
+10. Close every named browser session. Do not leave authentication-state files
    or other sensitive artifacts behind.
 
 ## Classify the result
@@ -196,8 +203,8 @@ For `citipo/openaction-europe` only:
 Classify every required path and the overall validation:
 
 - `PASSED`: every required path ran on the current target environment with its
-  exact fixture, all visible outcomes matched, and no relevant introduced
-  console or network failure was observed.
+  exact fixture or verified run-owned setup, all visible outcomes matched, and
+  no relevant introduced console or network failure was observed.
 - `FAILED`: a visible outcome is wrong, an adjacent regression is reproduced,
   or a relevant console error or failed request demonstrates a defect.
 - `BLOCKED`: a required PR, target URL, fixture, authorization, safe action, or

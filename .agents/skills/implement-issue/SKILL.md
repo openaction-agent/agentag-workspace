@@ -49,28 +49,36 @@ repository, or a product decision cannot be resolved unambiguously.
 7. Add or update appropriate tests. Run only the individual test files or test
    cases involved in the issue, plus narrowly scoped formatters or static
    checks. Never run a full local suite. Fix in-scope failures.
-8. Review the diff for correctness, security, data safety, unintended scope,
+8. Design the validation handoff from the implemented behavior, current source,
+   and preview configuration. For every required path, identify the preview
+   app, fixture account and permission, and each prerequisite record. Use a
+   verified existing fixture only when it is sufficient; otherwise write exact
+   safe UI instructions for the validation agent to create run-owned temporary
+   data. Do not create test data during implementation merely to support
+   preview validation, and never claim that a record exists when it was not
+   verified.
+9. Review the diff for correctness, security, data safety, unintended scope,
    generated artifacts, and accidental secrets. Reconcile it with the issue
    and specification.
-9. Commit with the issue ID, push the feature branch, and open a draft GitHub
+10. Commit with the issue ID, push the feature branch, and open a draft GitHub
    PR. Include the issue ID in its title and use only the exact PR body format
    below. Monitor that pushed head using the workspace CI policy before
    continuing.
-10. Use the `review-pr` skill on the draft PR before requesting human review.
+11. Use the `review-pr` skill on the draft PR before requesting human review.
     Fix every verified `Blocker` and `Important` issue, rerun the focused
     checks that cover those fixes, commit and push the corrections, monitor
     each new head using the workspace CI policy, and repeat the review loop
     until no `Blocker` or `Important` finding remains. Do not block readiness
     on `Nit` findings unless they reveal product risk.
-11. Confirm required CI has succeeded for the latest head using the workspace
+12. Confirm required CI has succeeded for the latest head using the workspace
     policy. Diagnose failures through its bounded GitHub MCP run, job, and log
     workflow; fix in-scope problems and repeat after every push. For
     `citipo/openaction-europe` only, also wait for the Coolify bot PR comment
     and verify preview URLs using the rules below.
-12. When required checks pass, and when Europe preview URLs are verified if the
+13. When required checks pass, and when Europe preview URLs are verified if the
     repository is `citipo/openaction-europe`, mark the PR ready. Link the PR and
     post exactly one Linear comment using the format below.
-13. Move the issue to the `To validate` status. Do not assume an automation-specific 
+14. Move the issue to the `To validate` status. Do not assume an automation-specific
     queue. Return a concise summary with issue and PR links, behavior delivered, tests 
     run, CI state, Europe preview state only when applicable, and any follow-up. For 
     non-Europe repositories, do not mention preview URLs or wait for them.
@@ -90,15 +98,25 @@ client final, sans noms de classes, fichiers, commandes ou détails internes.>
 
 ## Parcours de test sur la prévisualisation
 
-1. Dans l'application `<console|public|platform|mobilisation>`, utiliser les
-   données de test vérifiées `<fixture ou jeu de données>`.
-2. Accéder à `<navigation précise dans l'interface>`.
-3. Effectuer `<interactions UI précises>`.
-4. Vérifier `<résultat fonctionnel visible attendu>`.
+### <Nom du parcours>
 
-<Ajouter uniquement les autres parcours nécessaires, avec pour chacun
-l'application, la navigation, les interactions, les fixtures de
-test vérifiées et le résultat attendu.>
+1. Dans `<application>`, se connecter avec le compte de prévisualisation
+   `<fixture, rôle et organisation vérifiés>`.
+2. Préparer les données nécessaires à cette exécution :
+   - <navigation UI exacte pour créer `<entité>`> ;
+   - <valeurs exactes de chaque champ, relation et état requis> ;
+   - <valeur non sensible et unique à générer, par exemple
+     `Validation OPE-123 <horodatage>`> ;
+   - <résultat visible qui confirme que la préparation a réussi>.
+3. Accéder à `<navigation précise dans l'interface>`.
+4. Effectuer `<interactions UI précises>`.
+5. Vérifier `<résultat fonctionnel visible attendu>`.
+
+<Remplacer l'étape 2 par la fixture ou le record existant exact seulement
+lorsqu'il a été vérifié dans la configuration de prévisualisation. Ajouter
+uniquement les autres parcours nécessaires. Pour chacun, indiquer
+l'application, le compte et ses droits, la préparation ou la fixture vérifiée,
+la navigation, les interactions et le résultat attendu.>
 
 ## Implementation context
 
@@ -126,12 +144,19 @@ test vérifiées et le résultat attendu.>
 ````
 
 Copy the first two sections verbatim into the Linear comment. Keep their
-content concise, non-technical, and in French. Make the preview workflow usable
-by a human: name the app, navigation path, UI actions, preview fixture data,
-and visible result for `citipo/openaction-europe`; for other repositories,
-name only verified safe test data and do not reference unavailable Coolify
-preview URLs. Inspect the available fixtures and name the exact fixture or test
-record to use; never invent one or instruct the tester to use production data.
+content concise, non-technical, and in French. Make every preview workflow
+executable by the validation agent: name the app, navigation path, UI actions,
+fixture account and required rights, and visible result. For each prerequisite,
+provide either an exact fixture or test record verified in the current preview
+configuration, or a complete safe UI procedure to create it for that validation
+run. A creation procedure must name the entity, starting navigation, all
+required field values and relations, a non-sensitive unique value, and the
+visible confirmation that setup succeeded. Derive those instructions from the
+current code, fixtures, and implementation; never invent data, rely on an
+undocumented shared record, or instruct the validator to use production data.
+Do not create preview test data during implementation solely for this handoff.
+For other repositories, name only verified safe data or the same explicit
+creation procedure and do not reference unavailable Coolify preview URLs.
 
 Write the third section in English for future implementation and review work.
 Record every relevant implementation decision, approach, rationale, technical
@@ -205,6 +230,8 @@ Before handing off, verify that:
 - the branch has no unrelated or sensitive edits;
 - the PR body has only its three sections and its raw block stays within 80
   columns;
+- every required preview path identifies a verified fixture or a complete,
+  safe, run-owned data-creation procedure for the validation agent;
 - for Europe, the Linear comment has only the two copied French sections and
   four verified Coolify URLs;
 - for non-Europe repositories, Linear, PR, and final output does not wait for
