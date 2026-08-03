@@ -1,0 +1,4 @@
+interface:
+  display_name: "OpenAction Instance Operations"
+  short_description: "Operate the selected OpenAction instance"
+  default_prompt: "Use $openaction-instance-operations to work safely with an OpenAction instance."
