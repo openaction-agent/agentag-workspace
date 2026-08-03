@@ -63,57 +63,44 @@ The local machine you are running on has access to:
 * Sentry MCP for production issues debugging
 * OpenAction MCP for interactions with OpenAction instances
 
-## OpenAction instance MCP operations
+## OpenAction instance MCP
 
-One or more OpenAction MCP servers can be configured to work with live
-OpenAction instances. Prefer these MCP servers for any request about product
-state, statistics, supported product actions, or instance data/configuration.
-This includes CRM contacts and lists, tags, emails and campaigns, forms,
-content, events, payments, automations, analytics, users, roles, and settings.
-It also includes questions whose answer may exist only in a live OpenAction
-instance. Prefer MCP over UI interaction whenever it exposes the required
-operation.
+For live OpenAction product state, statistics, and supported actions, inspect
+the exposed MCP tools and schemas first; prefer them over repositories and UI
+interaction. Use narrow reads for direct lookups and simple statistics.
 
-1. Explore the available OpenAction MCP tools and their schemas first. Use a
-   matching MCP operation before inspecting a repository, using browser
-   automation, or claiming that the information/action is unavailable. Some
-   MCP servers expose a discoverable tool catalog, so use its discovery
-   operation when a suitable direct tool is not already visible.
-2. Resolve the target instance before reading or changing data. Usual user
-   aliases are `Place Publique` / `pp`, `Les Écologistes` / `ecolos`,
-   `L'Après` / `lapres`, and `Europe` / `europe`. Match them to the configured
-   server by its displayed name and endpoint; server labels are configurable
-   and must not be assumed to use a fixed prefix.
-3. If more than one OpenAction instance is configured and the user has not
-   specified one, ask which instance to use before making an MCP call. Do not
-   infer it from the repository, the current branch, or previous unrelated
-   work. If exactly one is configured, use it and state the selected instance
-   in the result.
-4. Use narrow, read-only queries before broader retrieval or a mutation. Use
-   the MCP directly for simple status/statistics questions, including counts,
-   totals, averages, rates, and comparisons. Check the current tool
-   description/input schema, use stable identifiers whenever possible, and
-   verify the targeted result after a successful mutation.
-5. Do not cross instance boundaries. Never copy data from one instance to
-   another, or treat data from one as data from another, without explicit user
-   direction. Apply the same separation to organizations within an instance:
-   never copy data from one organization to another, or treat one
-   organization's data as another's, without explicit user direction. Keep
-   personal data in responses to the minimum necessary.
-6. A read-only question never authorizes a product mutation. Perform only
-   explicit, in-scope writes. Follow the workspace's confirmation rule for
-   deletion, replacement, and other destructive changes; also require
-   confirmation for externally consequential or scope-expanding actions, and
-   when a bulk operation's material target (recipients, records, amount, or
-   audience) remains unclear.
-7. If the MCP does not expose the required data or operation after its tool
-   surface has been explored, use the UI or another available interface when
-   permitted, then report the MCP limitation and fallback used.
+All configured instances expose the same direct typed operations:
 
-Use the MCP tools exposed to the agent for actual instance operations.
-`codex mcp list` is useful to diagnose local configuration, but is not a
-substitute for the MCP tool surface available in the current session and must
-not be used to expose credentials or OAuth state.
+- access and projects: `access_read`, `projects_read`, `projects_change`;
+- CRM: `contacts_read`, `contacts_change`, `crm_configuration_read`,
+  `crm_configuration_change`, `duplicates_read`, `duplicates_change`;
+- campaigns: `campaigns_read`, `campaigns_change`, `campaigns_delete`,
+  `campaigns_delivery`, `campaigns_results`;
+- payments: `payments_read`, `payments_change`, `payments_export`,
+  `payment_filters_read`, `payment_filters_change`;
+- website: `site_content_read`, `site_content_change`,
+  `site_categories_read`, `site_categories_change`, `statistics_read`;
+- documents and team: `documents_read`, `documents_change`, `team_change`.
+
+### Operational rules
+
+- Resolve the instance first: `Place Publique` / `pp`, `Les Écologistes` /
+  `ecolos`, `L'Après` / `lapres`, or `Europe` / `europe`. Match these aliases
+  to configured server labels/endpoints. If multiple instances are configured
+  and none is named, ask; do not infer it from other work. If only one is
+  configured, use it and name it in the result.
+- Keep data isolated between instances and between organizations in the same
+  instance. Never copy or treat data across either boundary without explicit
+  user direction; minimize personal data in responses.
+- A read-only request never authorizes a mutation. Perform only explicit,
+  in-scope writes, and confirm destructive, externally consequential,
+  scope-expanding, or materially ambiguous bulk actions.
+- Inspect `*_change` sub-actions: they can delete, merge, transfer, refund,
+  terminate, or cancel records. Confirm missing recipient, send, or scheduling
+  scope before `campaigns_delivery`; minimize exports, campaign results, and
+  document downloads, which may contain personal data.
+- If MCP lacks the required operation, use a permitted fallback such as the UI
+  and report both the limitation and the fallback used.
 
 ## GitHub MCP operations
 

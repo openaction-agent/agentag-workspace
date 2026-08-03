@@ -32,22 +32,15 @@ codex mcp add github --url https://api.githubcopilot.com/mcp/ --bearer-token-env
 
 And add GITHUB_PAT_TOKEN env var (with token) to your .bashrc file.
 
-## Connect an OpenAction instance MCP
+## Configure OpenAction instance MCPs
 
-Configure one MCP server for each OpenAction instance that the agent may work
-with. Use a clear, instance-specific local name; for example, Place Publique:
+Add one clearly named server for each instance. For example, Place Publique:
 
 ```bash
 codex mcp add oa-placepublique --url https://console.mobilisation-place-publique.eu/mcp
 codex mcp login oa-placepublique
 ```
 
-The available instances can be named `placepublique` (`pp`), `ecologistes`
-(`ecolos`), `lapres`, and `europe`. Local MCP names are configurable, so agent
-guidance resolves the requested instance from the configured server rather
-than relying on an exact name. Run `codex mcp list` to check the configuration.
-
-In a Codex session, live OpenAction retrieval and actions must use the
-corresponding OpenAction MCP tools first. When several instances are connected,
-the user must identify the intended instance before the agent reads or changes
-live data.
+Suggested local names are `placepublique` (`pp`), `ecologistes` (`ecolos`),
+`lapres`, and `europe`. Names are configurable; run `codex mcp list` to check
+the active configuration.
