@@ -63,6 +63,14 @@ The local machine you are running on has access to:
 * Sentry MCP for production issues debugging
 * OpenAction MCP for interactions with OpenAction instances
 
+## Sentry error analysis
+
+For requests to analyse Sentry errors or issues, perform the investigation
+directly: examine the issue and event data, stack traces, breadcrumbs, tags,
+releases, and relevant repository code. Do not invoke Sentry Seer for this
+analysis; it is unnecessary and must only be used when the user explicitly
+asks for it.
+
 ## OpenAction instance MCP
 
 For live OpenAction product state, statistics, and supported actions, inspect
