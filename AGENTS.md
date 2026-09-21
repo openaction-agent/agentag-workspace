@@ -63,6 +63,21 @@ The local machine you are running on has access to:
 * Sentry MCP for production issues debugging
 * OpenAction MCP for interactions with OpenAction instances
 
+## Linear workflow status safety
+
+Never assign a Linear issue to a workflow status whose trimmed name starts with
+`Agent:` (case-insensitive). These statuses trigger automation and are reserved
+for human-controlled agent dispatch. This prohibition is absolute, including
+when an `Agent:` status appears to match the requested workflow or is the only
+similar status available.
+
+Before every Linear status update, resolve the target team's workflow statuses
+and select the intended non-agent status by exact name or verified ID. Never
+use fuzzy matching, semantic substitution, or an automation status as a
+fallback. If the exact non-agent status is missing or ambiguous, leave the
+issue status unchanged and report the blocker. After an update, re-read the
+issue and confirm that it has the exact intended status.
+
 ## Sentry error analysis
 
 For requests to analyse Sentry errors or issues, perform the investigation
