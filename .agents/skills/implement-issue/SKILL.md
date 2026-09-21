@@ -26,6 +26,9 @@ repository, or a product decision cannot be resolved unambiguously.
 - Use the GitHub and Linear access available in the local environment. Require
   enough access to read and update the issue, create or update the PR, and
   inspect CI; stop and report a missing capability that prevents completion.
+- Apply the root `AGENTS.md` Linear status safety rule to every transition.
+  Resolve exact non-agent status names; if a target is unavailable, leave the
+  issue status unchanged and report it instead of selecting a similar status.
 
 ## Workflow
 
@@ -40,7 +43,7 @@ repository, or a product decision cannot be resolved unambiguously.
    the issue and current code. Ask about ambiguity only when it changes product
    behavior or scope. Use the `specify-issue` skill as reference on how to
    do the specification.
-4. Move the issue to `Implementation in progres`.
+4. Move the issue to the exact non-agent status `Implementation in progres`.
 5. Fetch the latest remote `main`, verify the worktree state, and create a
    branch from it using the repository's branch naming convention.
 6. Inspect existing patterns and focused tests before editing. Implement the
@@ -78,10 +81,11 @@ repository, or a product decision cannot be resolved unambiguously.
 13. When required checks pass, and when Europe preview URLs are verified if the
     repository is `citipo/openaction-europe`, mark the PR ready. Link the PR and
     post exactly one Linear comment using the format below.
-14. Move the issue to the `To validate` status. Do not assume an automation-specific
-    queue. Return a concise summary with issue and PR links, behavior delivered, tests 
-    run, CI state, Europe preview state only when applicable, and any follow-up. For 
-    non-Europe repositories, do not mention preview URLs or wait for them.
+14. Move the issue to the exact non-agent status `To validate`. Do not assume
+    an automation-specific queue. Return a concise summary with issue and PR
+    links, behavior delivered, tests run, CI state, Europe preview state only
+    when applicable, and any follow-up. For non-Europe repositories, do not
+    mention preview URLs or wait for them.
 
 ## GitHub PR body
 

@@ -26,31 +26,34 @@ unambiguously.
 - Use the GitHub and Linear access available in the local environment. Require
   enough access to read and update every issue and inspect linked context; stop
   and report a missing capability that prevents completion.
+- Apply the root `AGENTS.md` Linear status safety rule to every transition.
+  Resolve exact non-agent status names; if a target is unavailable, leave the
+  issue status unchanged and report it instead of selecting a similar status.
 
 ## Workflow
 
 1. Read each issue's title, body, status, labels, links, attachments, and all
    comments. Treat later clarifications as authoritative.
-2. Move the issue to `Specification in progress`.
-3. Resolve the relevant repository from issue context and links. Fetch the
+2. Resolve the relevant repository from issue context and links. Fetch the
    latest `main` without discarding local work.
-4. Inspect the implementation on `origin/main`, including adjacent behavior,
+3. Inspect the implementation on `origin/main`, including adjacent behavior,
    tests, migrations, configuration, and established conventions.
-5. Extract only implementation-relevant facts and decisions that are not
+4. Extract only implementation-relevant facts and decisions that are not
    already clear from the issue: current code paths, ownership boundaries,
    contracts, constraints, risks, edge cases, and focused validation. Ask the
    user only when a decision materially changes the scope or product behavior.
-6. Draft one concise English specification per issue with the template below.
+5. Draft one concise English specification per issue with the template below.
    Complement the issue; do not repeat its title, problem statement, requested
    behavior, acceptance criteria, customer context, or discussion. Keep lines
    near 80 characters when practical.
-7. Re-read the issue and relevant code to verify every file reference and
+6. Re-read the issue and relevant code to verify every file reference and
    technical claim.
-8. Preserve the existing issue body. Replace an existing generated
+7. Preserve the existing issue body. Replace an existing generated
    specification for that issue; otherwise append the new one in a fenced
    Markdown block. Do not post the specification as a comment.
-9. Move the issue to `Spec to review` only after its body update succeeds.
-10. Return a concise summary with issue links, repository, important decisions,
+8. Move the issue to the exact non-agent status `Spec to review` only after its
+   body update succeeds.
+9. Return a concise summary with issue links, repository, important decisions,
     and any unresolved question.
 
 ## Specification template

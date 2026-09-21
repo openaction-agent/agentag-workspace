@@ -29,6 +29,9 @@ Ask the user to choose only when the input resolves to multiple plausible PRs.
 - Use the GitHub and Linear access available in the local environment. Require
   complete PR and issue context plus the ability to publish the required
   comments and status updates; stop and report a missing capability.
+- Apply the root `AGENTS.md` Linear status safety rule to every transition.
+  Resolve exact non-agent status names; if a target is unavailable, leave the
+  issue status unchanged and report it instead of selecting a similar status.
 - Load and follow the `playwright-cli` skill for all browser navigation,
   interaction, snapshots, console inspection, and network inspection. Before
   opening a preview, verify that `command -v playwright-cli` succeeds. If it
