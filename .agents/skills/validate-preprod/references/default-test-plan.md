@@ -1,162 +1,96 @@
 # Default Critical-Path Test Plan
 
-Use this plan only when the user supplies no test plan. Execute every required
-path in order. Keep paths read-only until the contact-lifecycle path creates a
-synthetic record owned by the run.
+Use this plan when the user supplies none. Run every required path in order. Stay read-only until the contact
+lifecycle path creates a synthetic record owned by the run.
 
-## Shared test data
+## Test data
 
-- Generate one run ID: `VP-YYYYMMDD-HHMMSS`.
-- Authorized email recipient: `agent@openaction.eu` only.
-- Synthetic contact email: use `agent+<run-id-lowercase>@openaction.eu` if the
-  form accepts plus addressing; otherwise use the authorized mailbox and put
-  the run ID in a dedicated external ID, tag, first name, or last name field.
-- Synthetic names: first name `Validation`, last name `<run-id>`.
-- Use no real person's name, address, phone number, membership, payment, or
-  political data.
+- One run ID: `VP-YYYYMMDD-HHMMSS`.
+- Email recipient: `agent@openaction.eu` only.
+- Synthetic contact email: `agent+<run-id-lowercase>@openaction.eu` if the form accepts it; otherwise the authorized
+  mailbox, with the run ID in an external ID, tag, or name field.
+- Synthetic name: first name `Validation`, last name `<run-id>`.
+- No real person's name, address, phone number, membership, payment, or political data.
 
-## 1. Reachability and authentication
+## 1. Reachability and login (required)
 
-Required.
+1. Open the URL and check that it is clearly a non-production environment.
+2. Check that the login form works without an application error.
+3. Log in with the credentials defined in `SKILL.md`.
+4. Check the authenticated landing page, the expected account or organization, and the absence of a login loop.
+5. Reload once and check that the session persists.
 
-1. Open the supplied URL and verify it is clearly a non-production environment.
-2. Verify the login form is usable and does not expose an application error.
-3. Sign in with the credentials defined in `SKILL.md`.
-4. Verify a successful authenticated landing page, the expected account or
-   organization context, and the absence of an authentication loop.
-5. Reload once and verify the session remains authenticated.
+## 2. Main navigation (required)
 
-Expected: the console loads in the correct preproduction environment and the
-authenticated session is stable.
+1. Open the dashboard or home, CRM/contacts, and email/campaigns modules from the main navigation, then return to the
+   starting module.
+2. Check that each page renders its heading or main content and the navigation remains available.
 
-## 2. Main navigation smoke test
+Expected: no broken routing, blank screen, or relevant console or network failure.
 
-Required.
-
-1. Identify the main console navigation.
-2. Open the dashboard or home, CRM/contacts, and email/campaigns modules.
-3. Return to the starting module using visible navigation.
-4. Verify each page renders its main heading or primary content and navigation
-   remains available.
-
-Expected: core modules load without broken routing, blank screens, or relevant
-console/network failures.
-
-## 3. CRM access and list
-
-Required.
+## 3. CRM list (required)
 
 1. Open the CRM or contacts module.
-2. Verify the contact list, its columns or cards, result count when present,
-   pagination or scrolling, and primary search/filter controls.
-3. Open one existing contact read-only, note only a non-sensitive UI identifier
-   for evidence, and return to the list without editing.
+2. Check the contact list, its columns or cards, the result count, pagination or scrolling, and the search and filter
+   controls.
+3. Open one existing contact read-only, note only a non-sensitive identifier, and return without editing.
 
-Expected: the CRM list and an existing contact detail are accessible and
-render consistently. If the environment contains no existing contacts, record
-that fact and continue with the synthetic contact path rather than inventing one.
+If there are no contacts, record it and continue with the synthetic contact path.
 
-## 4. Contact search
+## 4. Contact search (required)
 
-Required.
+1. Search for the run's synthetic contact if it exists, otherwise for a visible non-sensitive value from the list, and
+   check that the results match.
+2. Search for `NORESULT-<run-id>` and check for a clear empty state.
+3. Clear the search and check that the original list or count returns.
 
-1. Search for the exact run-owned synthetic contact if it already exists;
-   otherwise search for a clearly visible, non-sensitive value from the list.
-2. Verify returned rows actually match the query.
-3. Search for the impossible value `NORESULT-<run-id>`.
-4. Verify a clear zero-result or empty state.
-5. Clear the search and verify the original list or count returns.
+## 5. CRM filters (required when filters exist)
 
-Expected: positive, negative, and reset search behaviors are correct.
+`BLOCKED` if the CRM should offer filters but they are missing.
 
-## 5. CRM filters
+1. Apply one low-risk criterion (status, tag, subscription, creation date, organization) whose effect can be checked
+   on visible rows or the count, and check every visible row matches.
+2. Combine it with a second criterion when available and check the results stay consistent.
+3. Remove one criterion and check the other persists.
+4. Clear all filters and check the baseline returns.
+5. If the UI is expected to persist filters, reload with a harmless filter and check the behavior.
 
-Required when filters are present; `BLOCKED` if CRM should expose filters but
-the controls are unexpectedly absent.
+Evidence must come from rows, counts, or an empty state, not from filter chips alone.
 
-1. Open the filter interface and identify available low-risk criteria such as
-   contact status, tags, subscription status, creation date, or organization.
-2. Apply one criterion whose matching result can be verified from visible rows
-   or count. Verify every returned visible row is compatible with the filter.
-3. Combine it with a second criterion when the UI offers one and verify the
-   results narrow or remain logically consistent.
-4. Remove one criterion and verify the remaining filter persists.
-5. Clear all filters and verify the baseline list or count returns.
-6. Reload after applying a harmless filter only when the UI is expected to
-   persist filters; verify the documented or visibly implied behavior.
+## 6. Synthetic contact lifecycle (required when contact creation is available)
 
-Expected: filters apply, combine, remove, and reset correctly; result evidence
-must come from rows, counts, or an explicit empty state, not chips alone.
+`NOT APPLICABLE` if the module is intentionally read-only; `BLOCKED` if permissions or behavior are unclear.
 
-## 6. Synthetic contact lifecycle
+1. Check that the form rejects a missing required field, then create the contact with the synthetic data and the
+   minimum required fields.
+2. Open it and check the saved values.
+3. Find it in the CRM list by searching its run ID.
+4. Edit one harmless field (first name or a test tag), save, reload, and check persistence.
+5. Do not merge, subscribe, donate for, or otherwise affect an existing contact.
 
-Required when the authenticated role exposes contact creation. If the module
-is intentionally read-only, classify this path `NOT APPLICABLE`; if permission
-or UI behavior is unclear, classify it `BLOCKED`.
+## 7. Email sending (required when the email module and an authorized sender are available)
 
-1. Create one contact using the shared synthetic data and the minimum required
-   fields. Verify validation rejects one deliberately omitted required field
-   before submitting valid data.
-2. Verify success, open the created contact, and confirm exact persisted values.
-3. Return to the CRM list and find the contact by its run ID using search.
-4. Edit one harmless run-owned field, such as first name or a test tag, save,
-   reload, and verify persistence.
-5. Do not merge with, subscribe, donate for, or otherwise affect an existing
-   contact.
+1. Start a new email or campaign draft named `Validation preprod <run-id>`, with that subject and a short plain-text
+   body saying it is an automated preproduction test that can be ignored.
+2. Select only the authorized mailbox as recipient, preferably with a direct test-email feature. If only audience
+   sending exists, use a segment shown in the UI to contain exactly the run's contact and nobody else.
+3. Before sending, check that the final recipient count is exactly one authorized address; otherwise stop and mark
+   the path `BLOCKED`.
+4. Send, then check the visible queued, sent, or accepted confirmation and the draft status. If the environment routes
+   mail to a visible mail sink, check it too; otherwise do not claim delivery.
 
-Expected: create, validation, lookup, update, and persistence work for the
-run-owned contact.
+## 8. Cleanup (after user confirmation)
 
-## 7. Email composition and sending
+1. Capture the final evidence first, then ask the user to confirm deleting the run's records. Without confirmation,
+   keep them and report their identifiers.
+2. Once confirmed, delete or archive only the run's email draft or campaign, when this is clearly safe and keeps the
+   send evidence, and only the run's synthetic contact, when deletion is scoped to that record.
+3. Never delete a pre-existing contact, shared audience, template, or campaign. If safe cleanup is not possible, keep
+   the data and report its identifiers.
 
-Required when the email/campaign module and authorized sender are available.
-If the environment intentionally routes mail to a visible mail sink, use and
-verify that sink. Otherwise verify UI enqueueing only.
+A cleanup problem alone does not fail the validation.
 
-1. Open the email or campaign module and start a new draft.
-2. Use a name and subject containing the run ID, for example
-   `Validation preprod <run-id>`.
-3. Add a short plain-text body stating that it is an automated preproduction
-   validation and can be ignored.
-4. Select only the authorized test mailbox as the recipient. Prefer a direct
-   test-email feature. If only audience/campaign sending exists, create or use
-   a segment proven through visible UI to contain exactly the run-owned contact
-   and no other recipient.
-5. Before sending, re-check the final recipient count and address. It must be
-   exactly one authorized recipient; otherwise stop and mark the path `BLOCKED`.
-6. Send, then verify the visible queued, sent, or accepted confirmation and
-   the draft/campaign status. Do not equate this with inbox delivery.
+## 9. Logout (required)
 
-Expected: composition, recipient selection, final safety check, and email
-enqueueing succeed without sending to a real or unauthorized contact.
-
-## 8. Cleanup
-
-Required for data created by the run, but cleanup must not hide evidence and
-must not begin without explicit user confirmation.
-
-1. Capture the final functional evidence first.
-2. Ask the user to confirm deletion of the identified run-owned records. If no
-   confirmation is received, retain them and report their identifiers.
-3. After confirmation, delete or archive only the run-owned email draft/campaign if the UI offers a
-   clearly safe action and doing so does not erase send evidence.
-4. Delete only the synthetic contact created by the run if deletion is clearly
-   scoped to that exact record and is recoverable or expected in preproduction.
-5. Never delete a pre-existing contact, shared audience, template, or campaign.
-6. If safe cleanup is unavailable or uncertain, retain the data and report the
-   exact run ID and visible record identifiers for manual cleanup.
-
-Expected: only run-owned disposable data is removed, or retained artifacts are
-precisely documented without making the functional validation fail by itself.
-
-## 9. Session termination
-
-Required.
-
-1. Use the visible logout action when available and verify return to an
-   unauthenticated page without an error.
-2. Close the isolated browser session.
-3. Confirm that no authentication-state file or persistent profile remains.
-
-Expected: the session is terminated cleanly and no reusable credentials or
-authentication state are retained locally.
+1. Log out through the UI and check the return to an unauthenticated page without error.
+2. Close the browser session and check that no authentication state or persistent profile remains.

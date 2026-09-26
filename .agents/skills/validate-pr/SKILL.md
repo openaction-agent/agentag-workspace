@@ -1,226 +1,109 @@
 ---
 name: validate-pr
-description: "Validate an OpenAction implementation from a Linear issue ID or GitHub pull request number or URL. Use when asked to test, QA, or validate a PR through its French test journey: immediately mark the Linear issue as Validation in progress, route non-Europe issues to To validate, use Europe Coolify preview URLs for real functional validation, execute the flow with playwright-cli, post matching French GitHub and Linear comments, label passed issues AgentValidé and move them to Ready to merge, move unsuccessful issues to To validate, and report evidence as passed, failed, or blocked."
+description: "Functionally validate an OpenAction implementation, from a Linear issue ID or a GitHub pull request number or URL, in its Coolify preview with playwright-cli, then publish the result and update the Linear workflow. Use when asked to test, QA, recette, or validate a PR or issue implementation."
 ---
 
 # Validate a Pull Request
 
-Validate Europe implementations against their accepted behavior in the Coolify
-preview. For every other repository, skip browser validation because Coolify
-preview URLs are not available and move the Linear issue to `To validate`
-after the initial validation status transition.
+Validate `citipo/openaction-europe` implementations against their accepted behavior in the Coolify preview. Other
+repositories have no preview: only move their Linear issue to `To validate`.
 
-## Inputs
+The input is a Linear issue ID (`OPE-123`), a PR number (`#123`, optionally with `owner/repo`), or a PR URL. Ask only
+when it matches several plausible PRs.
 
-Accept one of:
+## Rules
 
-- a Linear issue ID, such as `OPE-123`;
-- a GitHub PR number, such as `#123`, optionally with `owner/repo`;
-- a GitHub pull request URL.
-
-Ask the user to choose only when the input resolves to multiple plausible PRs.
-
-## Operating rules
-
-- Follow the testing, Git, and CI policy in the workspace root `AGENTS.md`.
-  This validation workflow does not run local suites, commit, or push; use its
-  bounded-log rule if CI failure evidence must be inspected.
-- Follow the repository's `AGENTS.md` and local contribution instructions.
-- Use the GitHub and Linear access available in the local environment. Require
-  complete PR and issue context plus the ability to publish the required
-  comments and status updates; stop and report a missing capability.
-- Load and follow the `playwright-cli` skill for all browser navigation,
-  interaction, snapshots, console inspection, and network inspection. Before
-  opening a preview, verify that `command -v playwright-cli` succeeds. If it
-  does not, report the validation as blocked; do not install it or silently
-  substitute `npx`, a browser connector, `curl`, or another automation tool.
-- For Europe, this skill updates Linear status, posts one GitHub PR comment,
-  posts one Linear comment with the same content, and then moves Linear to
-  `Ready to merge` when validation passes or `To validate` when validation
-  fails or is blocked. For non-Europe repositories, move Linear to
-  `To validate` after the initial status transition and do not post
-  preview-validation comments.
-- Never test on production or with production data. Only work on the preview 
-  environments (which are safe, no risky capability).
-- Do not modify implementation code while validating. For Europe validation,
-  require a local checkout at the exact PR head before browser testing. Clone
-  the repository under `codebases` when absent; fetch the PR head and use a
-  clean detached checkout or isolated worktree when the existing checkout is
-  dirty or points elsewhere. Preserve unrelated work.
+- Follow the root `AGENTS.md` (including its CI log rules) and the repository's instructions. Do not modify
+  implementation code, commit, or push.
+- Stop and report if GitHub or Linear access is not enough to read the full context and publish comments and statuses.
+- Use the `playwright-cli` skill for every browser operation. If `command -v playwright-cli` fails, report the
+  validation as blocked; do not install it or substitute another tool (`npx`, a browser connector, `curl`, ...).
+- Test only on preview environments, never on production or with production data.
 
 ## Workflow
 
-1. Resolve only the Linear issue identity. For a PR input, read the minimum PR
-   metadata and verified links needed to find its Linear issue. If no issue can
-   be resolved, stop and ask for its ID. Immediately move the resolved issue
-   to `Validation in progress` and confirm the update succeeded before loading
-   the full validation context or performing any validation.
-2. Read the complete Linear issue, comments, links, and attachments. Resolve
-   its implementation PR and repository from verified links.
-3. Read the PR metadata, complete body, current head SHA, changed files and
-   diff, conversation comments, checks, and statuses. Determine whether the
-   repository is `citipo/openaction-europe`. Read deployments or Coolify
-   comments only when they are relevant. Retrieve complete paginated results.
-4. Treat the latest Linear clarification as accepted behavior. Record any
-   disagreement among Linear, the PR description, and the current
-   implementation before testing.
-5. If the repository is not `citipo/openaction-europe`, move the Linear issue
-   to `To validate`, report that Coolify validation is not applicable for
-   this project, and stop. Do not wait for preview URLs, run a substitute
-   browser validation, or mention preview URLs in the summary.
+1. Resolve the Linear issue (for a PR input, from the PR's links); if none can be found, ask for its ID. Immediately
+   move it to `Validation in progress` and confirm the update before doing anything else.
+2. Read the complete issue (comments, links, attachments) and its PR: body, head SHA, diff, comments, checks, and
+   statuses. The latest Linear clarification defines the accepted behavior; note any disagreement with the PR.
+3. If the repository is not `citipo/openaction-europe`, move the issue to `To validate`, report that preview
+   validation does not apply, and stop.
+4. Prepare the checkout and fixtures, the journey, and the preview URLs (sections below), then run the journey.
+5. Post the same French summary as one GitHub PR comment and one Linear comment.
+6. Update Linear and confirm it:
+   - `PASSED`: add the existing team label `AgentValidé` to the current labels (without removing or duplicating any),
+     move the issue to `Ready to merge`, then re-read it to confirm both. If either fails, report finalization as
+     blocked.
+   - `FAILED` or `BLOCKED`: move the issue to `To validate` without changing labels.
 
-## Europe validation lifecycle
+## Checkout and fixtures
 
-For `citipo/openaction-europe` only:
+1. Check out `citipo/openaction-europe` under `codebases` at the exact PR head SHA, in a clean detached checkout or
+   worktree if the existing one is dirty or elsewhere. Preserve unrelated work, and never use a stale checkout or the
+   GitHub diff instead of the source.
+2. Read the repository instructions, then the preview bootstrap and fixtures (`console/bin/setup-preview`,
+   `console/src/DataFixtures/TestFixtures.php`, `console/src/DataFixtures/DevFixtures.php`, and related helpers) to
+   find which fixtures the preview loads.
+3. From them, resolve the account, password, 2FA state, organization, and permissions needed, preferring a non-2FA
+   account with the narrowest sufficient rights, and every named test record.
 
-1. Prepare the exact current-head checkout and discover its preview fixtures
-   as described below.
-2. Execute the validation workflow below against the current PR head and
-   Coolify preview URLs.
-3. Post one GitHub PR comment and one Linear comment with exactly the same
-   French validation summary.
-4. Update the Linear issue according to the overall validation result and
-   confirm the update succeeded:
-   - `PASSED`: resolve the existing team label named exactly `AgentValidé`,
-     re-read the issue's current labels, append `AgentValidé` without removing
-     or duplicating any existing label, and move the issue to `Ready to merge`.
-     Re-read the issue and confirm both the label and status. If the exact label
-     is unavailable or either update cannot be confirmed, report workflow
-     finalization as blocked and do not claim external publication completed.
-   - `FAILED` or `BLOCKED`: move it to `To validate`; do not add or remove
-     `AgentValidé` or alter any other label.
-   The comments must make failures and blockers clear.
+## Test journey
 
-## Prepare the current-head checkout and fixtures
+1. Use the latest `## Parcours de test sur la prévisualisation` section of the PR body (the Linear copy can help, but
+   the PR is authoritative) when it names every app, account and rights, navigation, action, and expected result, and
+   each prerequisite is either a verified fixture or complete creation steps. Follow it exactly.
+2. Otherwise, design a French journey from the accepted behavior, the diff, the code, and verified fixtures. Never
+   invent fixtures.
+3. Cover the main changed behavior, its important permission, validation, or edge path, and the closest regression
+   paths justified by the diff, each with an expected visible result.
+4. If a fixture, role, product decision, safe action, or creation step remains unknown, mark that path blocked.
 
-1. Ensure `citipo/openaction-europe` is checked out under `codebases`, fetch the
-   resolved PR head, and verify that the inspected checkout is at the exact
-   remote head SHA. Do not use a stale branch, another task's checkout, or the
-   GitHub diff as a substitute for current source inspection.
-2. Read the repository instructions at that checkout before continuing.
-3. Inspect the current preview bootstrap and fixture definitions, including
-   `console/bin/setup-preview`, `console/src/DataFixtures/TestFixtures.php`,
-   `console/src/DataFixtures/DevFixtures.php`, and any relevant fixture helpers.
-   Determine which fixture groups the preview actually loads.
-4. Resolve and record internally the non-production account, password source,
-   2FA state, organization membership and permissions required by the journey.
-   Resolve every named test record from the same fixtures. Prefer a non-2FA
-   account with the narrowest sufficient permissions.
-5. Treat missing or unusable fixture access as a blocker only after inspecting
-   this current-head source and attempting the safe fixture authentication flow
-   below. Report the precise missing fixture, role, or bootstrap evidence.
+## Preview URLs and login
 
-## Recover or design the test journey
+- Use only URLs from the Coolify bot comment for this PR and head, never derived, edited, or copied from another PR.
+  Match each to its app (`console`, `public`, `platform`, `mobilisation`) and use only those the journey needs. A
+  missing, ambiguous, stale, unreachable, or unsafe URL blocks its path.
+- A fresh Console session starts on the login page; that is expected. Log in through the UI with the preview fixture
+  credentials, which are authorized only for that preview. Never write them in snapshots, screenshots, artifacts,
+  GitHub, Linear, or the reply.
+- Authentication is blocked only if the fixture account is absent, its login is rejected, permissions are missing,
+  2FA cannot be avoided, or the preview did not load the fixtures. Keep evidence of the failed attempt.
 
-1. Locate the latest `## Parcours de test sur la prévisualisation` section in
-   the PR body. If needed, compare it with the copy in the linked Linear issue
-   or comment, but prefer the current PR body for the current implementation.
-2. Use the existing French journey only when it names every required app,
-   fixture account and permission, navigation path, UI action, and visible
-   expected result. For every prerequisite record, require either an exact
-   verified fixture or test record, or complete safe UI instructions to create
-   run-owned temporary data. Preserve its sequence and data exactly.
-3. If the section is absent or unusable, design a French journey from the
-   accepted Linear behavior, PR diff and body, relevant current code, and
-   verified safe fixtures. Inspect fixture definitions before naming a record;
-   never invent a fixture or substitute production data.
-4. Cover the primary changed behavior, its important permission, validation,
-   or edge path, and the smallest adjacent regression paths justified by the
-   diff. Keep every step observable through the UI and identify the expected
-   visible result.
-5. If a required fixture, account role, product decision, safe action, or
-   complete data-creation instruction remains unknown, mark the affected path
-   blocked instead of improvising.
+## Running the journey
 
-## Resolve the target environment
+1. Use one isolated in-memory named session per app (for example `validate-pr-123-console`), with no persistent
+   profile unless the user provides an authorized one.
+2. After login, confirm access to the expected organization and records.
+3. Create any run-owned data through the prescribed UI steps with its unique value and verify the result. Do not
+   replace it with shared fixtures, guess fields, or use an API.
+4. Follow the journey exactly through visible UI controls, without JavaScript evaluation, storage edits, request
+   mocking, or API calls.
+5. After each meaningful action, verify the visible state with a focused snapshot or read-only inspection, including
+   persistence after navigation or reload when relevant.
+6. Run the adjacent regression paths the same way, proportionate to the change.
+7. After each path, check `playwright-cli console` and `playwright-cli requests`, correlate errors with actions, and
+   tell known preview noise from introduced defects.
+8. Keep concise evidence (app and URL, data used, key actions, outcome, relevant errors, a focused screenshot or
+   snapshot when useful) without tokens, credentials, personal data, or unrelated logs.
+9. Do not delete run-owned data without the user's confirmation, and never delete shared fixtures or pre-existing
+   records. Record created data so it can be cleaned up later.
+10. Close every browser session and leave no authentication state or sensitive artifact behind.
 
-1. For `citipo/openaction-europe`, read the Coolify bot comment on the resolved
-   PR. Accept only URLs explicitly present in a comment for that PR and current
-   head. Never derive, edit, copy from another PR, or guess a preview URL.
-2. For Europe, match each URL to its named application, such as `console`,
-   `public`, `platform`, or `mobilisation`. Use every app required by the
-   journey and regression paths; do not require an unrelated app.
-3. Mark a path blocked when its required Europe Coolify URL is missing,
-   ambiguous, stale, unreachable, or unsafe. Report the exact missing evidence.
-4. Treat an unauthenticated Console login page as an expected starting state,
-   not as evidence that authorization is unavailable.
-5. Use deterministic credentials committed as preview fixture data to log in
-   through visible UI controls. Such fixture credentials are authorized only
-   for the matching preview; never use them on production or substitute a real
-   staff account. They may be supplied to UI automation but must not appear in
-   snapshots, screenshots, retained artifacts, GitHub, Linear, or the final
-   summary.
-6. Use an already authorized browser state when one is safely available, but do
-   not require one. Mark authentication blocked only when the current-head
-   fixture account is absent, its verified login is rejected, required
-   permissions are missing, unavoidable 2FA prevents access, or the preview did
-   not load the expected fixtures. Preserve concise evidence of the failed
-   attempt without exposing credentials.
+## Result
 
-## Execute the journey with playwright-cli
+- `PASSED`: every required path ran on the preview with its data, all outcomes matched, and no relevant introduced
+  console or network failure appeared.
+- `FAILED`: an outcome is wrong, a regression is reproduced, or a console error or failed request shows a defect.
+- `BLOCKED`: a required PR, URL, fixture, authorization, safe action, or `playwright-cli` is unavailable. For
+  authenticated paths, this requires fixture discovery and a failed login attempt (or a precise reason why none was
+  possible).
 
-1. Create an isolated in-memory named session per app, for example
-   `validate-pr-123-console`, and open the exact quoted target URL. Do not use
-   a persistent profile unless the user supplies an authorized one. Expect a
-   fresh Console session to begin at the login page.
-2. Capture the starting URL and a focused snapshot. When login is shown, enter
-   the verified preview fixture account through visible controls, submit the
-   form, and confirm that the expected organization and fixture records are
-   accessible before executing the journey. Lack of pre-existing browser state
-   alone is never a blocker.
-3. Create any journey-prescribed run-owned temporary data through the stated
-   visible UI steps. Use the specified non-sensitive unique value, verify the
-   stated setup result, and record the value internally before continuing.
-   Do not substitute a shared fixture, guess missing fields, or use an API.
-4. Follow the planned navigation, actions, and fixture or run-owned data
-   exactly through visible UI controls.
-   Do not use JavaScript evaluation, storage edits, request mocking, or direct
-   API calls to bypass application behavior.
-5. After every meaningful action, verify the expected visible state with a
-   focused snapshot or read-only element inspection. Check persistence after
-   navigation or reload when it is part of the accepted behavior.
-6. Run the relevant adjacent regression paths in the same way. Keep them
-   proportional to the changed area; do not broaden validation into a generic
-   product tour.
-7. After each path, inspect `playwright-cli console` for errors and
-   `playwright-cli requests` for failed requests. Inspect relevant request
-   details and correlate them with the action. Distinguish harmless or known
-   preview noise from evidence of an introduced defect; do not silently ignore
-   either.
-8. Capture concise evidence: application and URL, fixture or run-owned data,
-   key actions, final visible outcome, relevant console errors, failed
-   requests, and a focused screenshot or snapshot when it materially supports
-   the result.
-   Exclude tokens, credentials, personal data, and unrelated internal logs.
-9. Do not delete run-owned data without the user's confirmation. Never delete
-   a shared fixture or pre-existing record. Record the created data so that a
-   confirmed cleanup can target it precisely.
-10. Close every named browser session. Do not leave authentication-state files
-   or other sensitive artifacts behind.
+Overall, any failed path means `FAILED` (list blocked paths too); otherwise any blocked path means `BLOCKED`. Never
+report `PASSED` from code inspection alone.
 
-## Classify the result
+Before publishing, re-read the PR head SHA; if it changed, refresh and rerun the affected paths.
 
-Classify every required path and the overall validation:
-
-- `PASSED`: every required path ran on the current target environment with its
-  exact fixture or verified run-owned setup, all visible outcomes matched, and
-  no relevant introduced console or network failure was observed.
-- `FAILED`: a visible outcome is wrong, an adjacent regression is reproduced,
-  or a relevant console error or failed request demonstrates a defect.
-- `BLOCKED`: a required PR, target URL, fixture, authorization, safe action, or
-  `playwright-cli` capability is unavailable, so correctness cannot be
-  established. For authenticated preview paths, require current-head fixture
-  discovery plus a failed fixture login attempt or a precise reason why that
-  safe attempt was impossible; a login page by itself is not a blocker.
-
-Use `FAILED` overall when any required path fails, even if another path is
-blocked; list both. Otherwise use `BLOCKED` when any required path is blocked.
-Never report `PASSED` from code inspection alone or when authentication,
-fixture, URL, or a required path was unavailable.
-
-## Report evidence
-
-Return a concise report containing:
+Reply with:
 
 ```markdown
 Status: PASSED | FAILED | BLOCKED
@@ -240,12 +123,7 @@ Artifacts: <safe local snapshot, screenshot, or trace paths when retained>
 External publication: GitHub PR comment and Linear comment posted
 ```
 
-## Europe GitHub and Linear comments
-
-Before publishing comments, re-read the remote PR head SHA. If it changed,
-refresh context and rerun affected paths before writing.
-
-Post the same French Markdown body as a GitHub PR comment and a Linear comment:
+GitHub and Linear comment (concise, without secrets, personal data, raw logs, or long traces):
 
 ```markdown
 ## Résultat de validation
@@ -270,6 +148,4 @@ Statut : <Réussi | Échoué | Bloqué>
 - Artefacts : <capture, snapshot ou trace conservée, si utile et sans secret>
 ```
 
-Use `Aucun problème détecté.` under `Problèmes détectés` when validation
-passes. Keep the comment concise and safe for humans; do not include secrets,
-tokens, personal data, raw logs, or long traces.
+When validation passes, write `Aucun problème détecté.` under `Problèmes détectés`.

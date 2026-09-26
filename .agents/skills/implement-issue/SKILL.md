@@ -5,96 +5,61 @@ description: "Implement an OpenAction Linear issue end to end. Use when given a 
 
 # Implement a Linear Issue
 
-Implement one Linear issue through a review-ready pull request. Use an existing
-technical specification in the issue as the implementation workflow when one
-is present.
+Take one Linear issue, such as `OPE-123`, to a review-ready pull request. Ask only when the issue, repository, or a
+product decision cannot be resolved unambiguously.
 
-## Inputs
+## Rules
 
-Require one Linear issue ID, such as `OPE-123`. Ask only when the issue,
-repository, or a product decision cannot be resolved unambiguously.
-
-## Operating rules
-
-- Follow the testing, Git, and CI policy in the workspace root `AGENTS.md`. It
-  is authoritative for focused local validation, every push, CI timing, and
-  failed-job log access.
-- Follow the repository's `AGENTS.md` and local contribution instructions.
-- Run from the relevant repository checkout. Preserve unrelated changes, use
-  an isolated worktree when the current checkout is not clean, and never push
-  directly to `main`.
-- Use the GitHub and Linear access available in the local environment. Require
-  enough access to read and update the issue, create or update the PR, and
-  inspect CI; stop and report a missing capability that prevents completion.
+- Follow the workspace testing and CI policy in the root `AGENTS.md`, and the repository's own instructions.
+- Work from the relevant repository checkout. Preserve unrelated changes, use an isolated worktree when the checkout
+  is not clean, and never push directly to `main`.
+- Stop and report if GitHub or Linear access is not enough to read and update the issue, manage the PR, and inspect CI.
 
 ## Workflow
 
-1. Read the issue's title, body, status, labels, links, attachments, and all
-   comments. Resolve the relevant repository and any linked pull request.
-2. Locate the latest technical specification in the issue body. When present,
-   use its implementation context, design, impacts, edge cases, validation,
-   scope boundaries, and decisions as issue-specific guidance. Let newer issue
-   comments and the current code override stale details; disclose any material
-   divergence.
-3. When no specification exists, derive the smallest safe implementation from
-   the issue and current code. Ask about ambiguity only when it changes product
-   behavior or scope. Use the `specify-issue` skill as reference on how to
-   do the specification.
-4. Move the issue to `Implementation in progres`.
-5. Fetch the latest remote `main`, verify the worktree state, and create a
-   branch from it using the repository's branch naming convention.
-6. Inspect existing patterns and focused tests before editing. Implement the
-   complete change, including migrations, permissions, translations,
+1. Read the whole issue: title, body, status, labels, links, attachments, and comments. Resolve the repository and
+   any linked PR.
+2. If the issue body contains a technical specification, use the latest one as implementation guidance; newer
+   comments and the current code override stale details, and material divergences must be disclosed. Otherwise,
+   derive the smallest safe implementation from the issue and the code, using the `specify-issue` skill as a
+   reference, and ask only about ambiguities that change product behavior or scope.
+3. Move the issue to `Implementation in progres`.
+4. Fetch the latest `main` and create a branch from it following the repository's naming convention.
+5. Implement the complete change, following existing patterns, including migrations, permissions, translations,
    observability, or compatibility work when relevant.
-7. Add or update appropriate tests. Run only the individual test files or test
-   cases involved in the issue, plus narrowly scoped formatters or static
-   checks. Never run a full local suite. Fix in-scope failures.
-8. Design the validation handoff from the implemented behavior, current source,
-   and preview configuration. For every required path, identify the preview
-   app, fixture account and permission, and each prerequisite record. Use a
-   verified existing fixture only when it is sufficient; otherwise write exact
-   safe UI instructions for the validation agent to create run-owned temporary
-   data. Do not create test data during implementation merely to support
-   preview validation, and never claim that a record exists when it was not
-   verified.
-9. Review the diff for correctness, security, data safety, unintended scope,
-   generated artifacts, and accidental secrets. Reconcile it with the issue
-   and specification.
-10. Commit with the issue ID, push the feature branch, and open a draft GitHub
-   PR. Include the issue ID in its title and use only the exact PR body format
-   below. Monitor that pushed head using the workspace CI policy before
-   continuing.
-11. Use the `review-pr` skill on the draft PR before requesting human review.
-    Fix every verified `Blocker` and `Important` issue, rerun the focused
-    checks that cover those fixes, commit and push the corrections, monitor
-    each new head using the workspace CI policy, and repeat the review loop
-    until no `Blocker` or `Important` finding remains. Do not block readiness
-    on `Nit` findings unless they reveal product risk.
-12. Confirm required CI has succeeded for the latest head using the workspace
-    policy. Diagnose failures through its bounded GitHub MCP run, job, and log
-    workflow; fix in-scope problems and repeat after every push. For
-    `citipo/openaction-europe` only, also wait for the Coolify bot PR comment
-    and verify preview URLs using the rules below.
-13. When required checks pass, and when Europe preview URLs are verified if the
-    repository is `citipo/openaction-europe`, mark the PR ready. Link the PR and
-    post exactly one Linear comment using the format below.
-14. Move the issue to the `To validate` status. Do not assume an automation-specific
-    queue. Return a concise summary with issue and PR links, behavior delivered, tests 
-    run, CI state, Europe preview state only when applicable, and any follow-up. For 
-    non-Europe repositories, do not mention preview URLs or wait for them.
+6. Add or update tests and run only the focused tests and checks for the change. Fix in-scope failures.
+7. Prepare the preview test journeys (see below).
+8. Review the diff for correctness, security, data safety, unintended scope, generated artifacts, and secrets, and
+   reconcile it with the issue and specification.
+9. Commit with the issue ID, push, and open a draft PR whose title contains the issue ID and whose body follows the
+   format below. Follow CI for the pushed head.
+10. Run the `review-pr` skill on the draft PR. Fix every verified `Blocker` and `Important` finding, push, and
+    repeat until none remain. `Nit` findings do not block unless they reveal product risk.
+11. Make sure required CI passes on the latest head. For `citipo/openaction-europe`, also verify the Coolify preview
+    URLs (see below).
+12. Mark the PR ready, then post one Linear comment in the format below.
+13. Move the issue to `To validate` and reply with the issue and PR links, delivered behavior, tests run, CI state,
+    Europe preview state when applicable, and any follow-up.
+
+## Preview test journeys
+
+Each journey must be executable by the validation agent: the app, the fixture account and its rights, the navigation,
+the UI actions, and the visible expected result. For each prerequisite record, give either a fixture or record
+verified in the current preview configuration, or complete safe UI steps to create it during the validation run
+(entity, starting page, every required field and relation, a unique non-sensitive value, and the visible
+confirmation). Derive them from the current code and fixtures; never invent data, rely on undocumented shared records,
+or point to production data. Do not create preview data yourself for this handoff.
 
 ## GitHub PR body
 
-Write exactly these three top-level sections in this order. Add no preamble,
-issue metadata, link list, test section, generated footer, or other text. Put
-all technical and validation details inside the third section's code block.
+Write exactly these three sections, with nothing before or after:
 
 ````markdown
 ## Résumé fonctionnel
 
 <En français non technique, résumer en quelques phrases l'objectif de l'issue
-Linear et l'approche fonctionnelle effectivement mise en œuvre. Écrire pour le
-client final, sans noms de classes, fichiers, commandes ou détails internes.>
+Linear et l'approche fonctionnelle mise en œuvre. Écrire pour le client final,
+sans noms de classes, fichiers, commandes ou détails internes.>
 
 ## Parcours de test sur la prévisualisation
 
@@ -105,18 +70,16 @@ client final, sans noms de classes, fichiers, commandes ou détails internes.>
 2. Préparer les données nécessaires à cette exécution :
    - <navigation UI exacte pour créer `<entité>`> ;
    - <valeurs exactes de chaque champ, relation et état requis> ;
-   - <valeur non sensible et unique à générer, par exemple
+   - <valeur non sensible et unique, par exemple
      `Validation OPE-123 <horodatage>`> ;
-   - <résultat visible qui confirme que la préparation a réussi>.
+   - <résultat visible qui confirme la préparation>.
 3. Accéder à `<navigation précise dans l'interface>`.
 4. Effectuer `<interactions UI précises>`.
 5. Vérifier `<résultat fonctionnel visible attendu>`.
 
-<Remplacer l'étape 2 par la fixture ou le record existant exact seulement
-lorsqu'il a été vérifié dans la configuration de prévisualisation. Ajouter
-uniquement les autres parcours nécessaires. Pour chacun, indiquer
-l'application, le compte et ses droits, la préparation ou la fixture vérifiée,
-la navigation, les interactions et le résultat attendu.>
+<Remplacer l'étape 2 par la fixture ou le record existant seulement s'il a été
+vérifié dans la configuration de prévisualisation. Ajouter uniquement les autres
+parcours nécessaires.>
 
 ## Implementation context
 
@@ -143,28 +106,10 @@ la navigation, les interactions et le résultat attendu.>
 ```
 ````
 
-Copy the first two sections verbatim into the Linear comment. Keep their
-content concise, non-technical, and in French. Make every preview workflow
-executable by the validation agent: name the app, navigation path, UI actions,
-fixture account and required rights, and visible result. For each prerequisite,
-provide either an exact fixture or test record verified in the current preview
-configuration, or a complete safe UI procedure to create it for that validation
-run. A creation procedure must name the entity, starting navigation, all
-required field values and relations, a non-sensitive unique value, and the
-visible confirmation that setup succeeded. Derive those instructions from the
-current code, fixtures, and implementation; never invent data, rely on an
-undocumented shared record, or instruct the validator to use production data.
-Do not create preview test data during implementation solely for this handoff.
-For other repositories, name only verified safe data or the same explicit
-creation procedure and do not reference unavailable Coolify preview URLs.
-
-Write the third section in English for future implementation and review work.
-Record every relevant implementation decision, approach, rationale, technical
-detail, deviation, validation result, risk, and continuation detail. Omit empty
-internal subsections, but do not move technical content outside the raw
-Markdown code block. Wrap every line inside that block to at most 80
-characters, including commands and code paths. Check the prepared body before
-publication; the following command must print nothing:
+The first two sections are concise, non-technical French. The third is English and records every relevant decision,
+approach, rationale, deviation, validation result, risk, and continuation detail for future work; omit empty
+subsections but keep all technical content inside its code block. Wrap every line of that block at 80 characters or
+less; this check must print nothing:
 
 ```bash
 awk '
@@ -176,37 +121,19 @@ awk '
 
 ## Europe Coolify preview URLs
 
-Apply this section only when the resolved repository is
-`citipo/openaction-europe`. For every other repository, skip it entirely: do
-not wait for Coolify, do not look for missing preview URLs, do not keep the PR
-in draft because URLs are absent, and do not include preview URLs in the PR,
-Linear, or final summary.
+Only for `citipo/openaction-europe`; other repositories have no preview URLs, so never wait for them or mention them
+in the PR, Linear, or final reply.
 
-For Europe, read the Coolify bot comment on the current PR and use only URLs
-explicitly listed there for that PR and head commit. Match each URL to its named
-app and verify that it is reachable. Never derive, copy, or guess a URL.
-Require verified URLs for `console`, `public`, `platform`, and `mobilisation`.
-If any is missing, ambiguous, unreachable, or not tied to the PR, keep the PR
-in draft and Linear `Implementation in progres`, do not post the Linear
-comment, and report the missing evidence. Never claim Europe completion with
-incomplete or inferred URLs.
+Use only the URLs listed in the Coolify bot comment for this PR and head commit, never derived or guessed ones. Verify
+that the `console`, `public`, `platform`, and `mobilisation` URLs are present and reachable. If any is missing,
+ambiguous, unreachable, or not tied to the PR, keep the PR in draft and the issue in `Implementation in progres`, skip
+the Linear comment, and report what is missing.
 
 ## Linear comment
 
-For `citipo/openaction-europe`, post exactly these three top-level sections in
-this order. Copy the first two sections and their content verbatim from the PR.
-Add no technical summary, issue metadata, CI details, status note, footer, or
-other commentary.
+Copy the first two PR sections verbatim, with nothing else. For `citipo/openaction-europe`, add:
 
 ```markdown
-## Résumé fonctionnel
-
-<Copie exacte de la première section de la PR>
-
-## Parcours de test sur la prévisualisation
-
-<Copie exacte de la deuxième section de la PR>
-
 ## Prévisualisations Coolify
 
 - Console : <URL de prévisualisation vérifiée>
@@ -215,24 +142,9 @@ other commentary.
 - Mobilisation : <URL de prévisualisation vérifiée>
 ```
 
-For every other repository, post only the first two sections, copied verbatim
-from the PR. Do not add `Prévisualisations Coolify`, an empty replacement
-section, or any preview URL note.
+## Before handing off
 
-## Quality check
-
-Before handing off, verify that:
-
-- the implementation and specification satisfy the latest accepted scope;
-- focused tests cover important success, edge, permission, and failure paths;
-- every pushed head was handled under the workspace CI monitoring policy, and
-  the latest required CI is successful;
-- the branch has no unrelated or sensitive edits;
-- the PR body has only its three sections and its raw block stays within 80
-  columns;
-- every required preview path identifies a verified fixture or a complete,
-  safe, run-owned data-creation procedure for the validation agent;
-- for Europe, the Linear comment has only the two copied French sections and
-  four verified Coolify URLs;
-- for non-Europe repositories, Linear, PR, and final output does not wait for
-  or mention preview URLs.
+Check that the change satisfies the latest accepted scope; tests cover the important success, edge, permission, and
+failure paths; the latest required CI passed; the branch has no unrelated or sensitive edits; the PR body has only its
+three sections within 80 columns in the raw block; every preview journey is executable as described above; and the
+Linear comment matches its format.

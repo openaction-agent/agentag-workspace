@@ -1,6 +1,6 @@
 # OpenAction agent workspace environment
 
-This repository contains the OpenAction Agent workspace environment (provisioning, skills, sub agents, ...). 
+This repository contains the OpenAction Agent workspace environment (provisioning, skills, sub agents, ...).
 
 ## Supported system
 
@@ -10,16 +10,13 @@ This repository contains the OpenAction Agent workspace environment (provisionin
 
 ## Provision the VPS
 
-Clone the repository as the user that will run Codex, then run:
-
-```bash
-./bin/provision.sh
-```
+Clone the repository as the user that will run Codex, install a coding harness (Codex, Claude Code, ...), and run
+[PROVISION.md](PROVISION.md) as a prompt in it.
 
 ## Finish the setup
 
-Reconnect over SSH (or start a new login shell) so the MetaMCP environment variable and, for non-root users, 
-Docker group membership take effect. 
+Start a new login shell (or reconnect over SSH) so environment changes and, for non-root users, Docker group
+membership take effect.
 
 Then authenticate Codex:
 

@@ -5,123 +5,70 @@ description: "Validate an OpenAction preproduction environment from a supplied U
 
 # Validate an OpenAction Preproduction Environment
 
-Validate a supplied preproduction URL through the visible UI and return a
-concise, evidence-backed result. Do not require a Pull Request, repository, or
-Linear issue, and do not publish comments or change external workflow statuses.
+Validate a preproduction URL through its visible UI and return a concise, evidence-backed result. No PR, repository,
+or Linear issue is involved, and nothing is published or changed in external workflows.
 
 ## Inputs
 
-Require:
+A preproduction URL is required. The user may also give a test plan (in the prompt or as an attachment) and specific
+fixtures, expected results, apps, or exclusions.
 
-- one explicit preproduction URL.
+A supplied plan is authoritative: add only the smoke checks needed to log in, reach the feature, and catch an obvious
+adjacent regression. Without a plan, run [the default critical-path plan](references/default-test-plan.md) in full.
+Ask only when the URL is missing or the plan has an ambiguity the UI cannot resolve safely.
 
-Accept optionally:
+## Rules
 
-- a test plan written in the prompt or supplied as an accessible attachment;
-- specific fixtures, expected results, applications, browsers, or exclusions.
+- Follow the root `AGENTS.md`.
+- Use the `playwright-cli` skill for every browser operation. If `command -v playwright-cli` fails, report `BLOCKED`;
+  do not install it or use another tool.
+- Stay on the supplied host and the same-environment redirects or sibling apps reached through its navigation. Never
+  derive a target, go to production, or follow a link whose environment is uncertain.
+- Use visible UI controls only, without JavaScript evaluation, storage edits, request mocking, or API calls.
+- Do not modify code, repositories, Linear issues, PRs, or deployments.
+- Log in only on the supplied preproduction console, as `agent@openaction.eu` with the password stored in
+  `/root/openaction-preprod-password.txt`. Keep credentials out of messages, reports, screenshots, snapshots, traces,
+  filenames, and saved authentication state, and do not persist a browser profile.
+- Send email only to `agent@openaction.eu`. Do not export CRM data, pay, publish content, or contact real users.
+- Never alter or delete pre-existing records. Create only uniquely named, synthetic test data, and delete it only
+  after capturing evidence and getting the user's confirmation; otherwise keep it and report its identifier.
+- Stop any action whose scope, recipient, environment, or effect is uncertain, and mark its path `BLOCKED`.
 
-Treat the supplied test plan as authoritative. Add only the smallest smoke
-checks needed to authenticate, reach the requested feature, and detect an
-obvious adjacent regression. When no test plan is supplied, read and execute
-[the default critical-path plan](references/default-test-plan.md) completely.
+## Run
 
-Ask for clarification only when the target URL is missing or the supplied plan
-has a material ambiguity that cannot be resolved safely from the UI.
+1. Turn the plan into ordered paths, each with its starting state, fixture, actions, expected visible result, and
+   cleanup, keeping the user's order and data. With the default plan, adapt labels to the UI but skip no required
+   path.
+2. Find existing fixtures through read-only UI inspection; never assume a record exists. Mark a path `BLOCKED` when a
+   module, permission, fixture, safe recipient, or product decision is missing.
+3. Use a run ID such as `VP-YYYYMMDD-HHMMSS` in every created record, email subject, and kept artifact.
+4. Open the exact URL in one isolated in-memory named session (for example `validate-preprod-YYYYMMDD-HHMMSS`),
+   capture the starting URL and a snapshot, log in through the form, and check the identity and environment.
+5. Run the paths in order, verifying the visible state after each meaningful action:
+   - for searches and filters, check both the narrowed results and the reset, not just the controls;
+   - for created or edited data, check persistence after navigation or reload;
+   - for email, check the exact recipient before sending, put the run ID in the subject, and verify the visible
+     queued or sent confirmation. Claim inbox delivery only if the plan provides mailbox access and it was checked.
+6. After each path, check `playwright-cli console` and `playwright-cli requests`, correlate errors with actions, and
+   tell environment noise from real defects.
+7. Keep concise evidence, preferably snapshots and targeted screenshots, without secrets or unneeded personal data.
+8. Ask before cleaning up run-owned data; if confirmed, clean up through the UI. A failed cleanup does not change the
+   functional result but is reported as needing manual action.
+9. Close the session and remove any sensitive local artifact.
 
-## Operating rules
+## Result
 
-- Follow the workspace `AGENTS.md` and applicable local instructions.
-- Load and follow the `playwright-cli` skill for all browser operations. First
-  require `command -v playwright-cli` to succeed. If unavailable, report the
-  validation as `BLOCKED`; do not install it or substitute another browser tool.
-- Validate only the exact supplied preproduction host and its same-environment
-  redirects or sibling applications discovered through visible navigation.
-  Never derive a target, switch to production, or follow a link whose
-  environment is uncertain.
-- Use visible UI controls. Do not use JavaScript evaluation, storage edits,
-  request mocking, or direct API calls to bypass product behavior.
-- Do not modify application code, repositories, Linear issues, Pull Requests,
-  or deployment state.
-- Use the credentials below only on the supplied preproduction console login:
-  - username: `agent@openaction.eu`
-  - password: exact content of the file `/root/openaction-preprod-password.txt` 
-    on this server
-- Treat credentials as secrets. Never repeat them in commentary, reports,
-  screenshots, snapshots, traces, shell history excerpts, filenames, or saved
-  authentication state. Do not persist a browser profile or authentication file.
-- Never send email to anyone except `agent@openaction.eu`. Never export CRM
-  data, initiate a payment, publish content, or contact real users by default.
-- Never alter or delete pre-existing records. Create only uniquely named,
-  non-sensitive test data required by the plan. Before deleting even run-owned
-  test data, ask the user for confirmation after evidence is captured. Without
-  confirmation, retain the record and report its exact unique identifier.
-- Stop a path before any action whose scope, recipient, environment, or effect
-  is uncertain, and classify that path as `BLOCKED`.
+- `PASSED`: every required action ran on the preprod, outcomes matched, and no relevant console or network defect
+  appeared.
+- `FAILED`: an outcome is wrong, a regression is reproduced, or a console error or failed request shows a defect.
+- `BLOCKED`: a required URL, module, fixture, authorization, safe action, or browser capability is unavailable.
+- `NOT APPLICABLE`: the UI clearly shows the path is outside this environment's product scope. Missing access or an
+  unexpected absence is `BLOCKED`.
 
-## Prepare the journey
+Overall, any failed path means `FAILED`; otherwise any blocked required path means `BLOCKED`; `PASSED` requires every
+required path to pass. Never infer success from code or page reachability.
 
-1. Normalize the supplied plan into ordered paths. For each path, record its
-   starting state, fixture, UI actions, expected visible result, and safe
-   cleanup. Preserve the user's sequence and exact data.
-2. If no plan is supplied, load the entire default plan. Adapt labels and menu
-   names to the UI, but do not silently omit a required path.
-3. Discover suitable pre-existing fixtures through read-only UI inspection.
-   Never invent a contact or organization that is expected to exist.
-4. Use a run identifier such as `VP-YYYYMMDD-HHMMSS` for every created record,
-   email subject, and retained artifact. Use only synthetic, non-sensitive data.
-5. Mark a path `BLOCKED` when it requires an unavailable module, permission,
-   fixture, safe recipient, or product decision. Record the precise blocker.
-
-## Execute with playwright-cli
-
-1. Create one isolated in-memory named session, for example
-   `validate-preprod-YYYYMMDD-HHMMSS`, and open the exact quoted URL.
-2. Capture the starting URL and focused snapshot, authenticate through the
-   visible login form, and verify the post-login identity and environment.
-3. Execute paths in order. After every meaningful action, verify the expected
-   visible state with a focused snapshot or read-only element inspection.
-4. For searches and filters, verify both the narrowed result and restoration
-   after clearing the criterion. Do not report success from control state alone.
-5. For created or edited data, verify persistence after navigation or reload.
-6. For email, verify the exact recipient before the final send action. Send
-   only to `agent@openaction.eu`, use the run identifier in the subject, and
-   verify the visible queued/sent confirmation. Do not claim inbox delivery
-   unless the plan supplies authorized mailbox access and it is actually checked.
-7. After each path, inspect `playwright-cli console` and
-   `playwright-cli requests`. Correlate relevant errors and failed requests with
-   the action; distinguish preview noise without silently ignoring it.
-8. Capture concise evidence without secrets or unrelated personal data. Prefer
-   snapshots and targeted screenshots. Redact or omit personal data that is not
-   necessary to establish the result.
-9. After evidence capture, request confirmation before deleting run-owned data.
-   If confirmed, clean it up through the visible UI. Otherwise retain it and
-   report its identifier. A cleanup failure does not erase the functional
-   result, but must be reported as a blocker requiring manual action.
-10. Close the browser session and remove any sensitive local artifact created
-    by the run.
-
-## Classify results
-
-Classify each path and the overall validation:
-
-- `PASSED`: all required actions ran on the target preprod, visible outcomes
-  matched, and no relevant console or network defect was observed.
-- `FAILED`: a visible outcome is wrong, a regression is reproduced, or a
-  relevant console error or failed request demonstrates a defect.
-- `BLOCKED`: a required URL, module, fixture, authorization, safe action, or
-  browser capability is unavailable, so correctness cannot be established.
-- `NOT APPLICABLE`: the path is explicitly outside the supplied environment's
-  product scope. Use only when the UI provides clear evidence; missing access
-  or an unexpected absence is `BLOCKED`, not `NOT APPLICABLE`.
-
-Use `FAILED` overall when any required path fails, even if another is blocked.
-Otherwise use `BLOCKED` when any required path is blocked. Use `PASSED` only
-when all required paths pass; optional or clearly non-applicable paths do not
-prevent a pass. Never infer success from code inspection or page reachability.
-
-## Report evidence
-
-Return a concise report in the user's language:
+Reply following the workspace answer-language rule:
 
 ```markdown
 Status: PASSED | FAILED | BLOCKED
@@ -140,6 +87,5 @@ Email: <recipient redacted as authorized test mailbox, subject/run ID, UI send r
 Artifacts: <safe absolute paths to retained screenshots or traces>
 ```
 
-Do not reproduce credentials, authentication tokens, contact personal data,
-raw logs, or long traces. State clearly when email enqueueing was verified but
-delivery was not.
+Leave out credentials, tokens, contacts' personal data, raw logs, and long traces, and say clearly when an email was
+queued but its delivery was not checked.

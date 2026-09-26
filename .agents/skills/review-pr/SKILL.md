@@ -5,91 +5,40 @@ description: "Review an OpenAction change from either a Linear issue ID or a Git
 
 # Review a Linear Issue or Pull Request
 
-Review one implementation deeply, publish actionable findings on GitHub, and
-summarize the result.
+Review one implementation in depth, publish the findings as a GitHub review, and summarize the result.
 
-## Inputs
+The input is a Linear issue ID (`OPE-123`), a PR number (`#123`, optionally with `owner/repo`), or a PR URL. Ask only
+when an issue links to several plausible PRs. The review mode follows from the findings and cannot be overridden.
 
-Accept one of:
+## Rules
 
-- a Linear issue ID, such as `OPE-123`;
-- a GitHub PR number, such as `#123`, optionally with `owner/repo`;
-- a GitHub pull request URL.
+- Follow the root `AGENTS.md` (focused tests only, bounded CI logs) and the repository's instructions.
+- Do not modify or push the implementation unless the user separately asks for fixes. Use an isolated worktree when
+  local checks need a clean checkout.
+- Stop and report if GitHub or Linear access is not enough to read the full context and publish the review.
+- Never expose secrets, personal data, private customer details, or raw internal logs.
 
-Ask the user to choose only when a Linear issue links to multiple plausible
-PRs. Derive the review submission mode from the verified findings; do not
-accept a mode override.
+## Workflow
 
-## Operating rules
+1. Resolve the Linear issue and the PR from each other's links, and the repository. Read the full issue (comments,
+   links, attachments); its latest clarification defines the expected behavior. Note any disagreement with the PR.
+2. Record the base revision and head SHA, and read the PR metadata, full diff, commits, reviews, inline threads,
+   conversation, checks, statuses, and deployments when relevant, retrieving every page.
+3. Inspect code outside the diff as needed: call sites, contracts, migrations, permissions, and patterns.
+4. Analyze the change with `references/review-criteria.md`, favoring product-impacting findings over style.
+5. Run only the focused tests and static checks needed for confidence.
+6. Verify each finding against the head revision, cite `path:line` for code findings, and skip issues already raised
+   and resolved.
+7. Re-read the PR head SHA; if it changed, refresh and revalidate every finding.
+8. Submit exactly one GitHub review, with inline comments where they make a fix clearer: `request-changes` if there is
+   at least one `Blocker`, otherwise `comment`. Never approve.
+9. Reply with the review mode, finding counts, validation performed, PR link, and any blocker, without pasting the
+   review.
 
-- Follow the testing, Git, and CI policy in the workspace root `AGENTS.md`. In
-  this read-only workflow, its focused-test and bounded CI-log rules still
-  apply; do not push changes.
-- Follow the repository's `AGENTS.md` and local contribution instructions.
-- Run from the relevant repository checkout. Preserve unrelated changes and
-  use an isolated worktree when local validation requires a clean checkout.
-- Use the GitHub and Linear access available in the local environment. Require
-  enough access to read the complete review context and publish the review;
-  stop and report a missing capability that prevents completion.
-
-## Resolve context
-
-1. For a Linear ID, read the full issue, comments, links, and attachments.
-   Resolve its implementation PR and repository from those sources.
-2. For a PR input, resolve the repository from the URL, explicit input, or
-   current checkout. Read the PR body and links to identify the Linear issue.
-3. Read both Linear and PR context when linked. Treat later issue clarification
-   as the expected behavior and note any disagreement with the PR description.
-
-## Review workflow
-
-1. Resolve the repository and pull request. Record the base revision and
-   current head SHA.
-2. Inspect PR metadata, the full diff, changed files, commits, reviews, inline
-   threads, conversation, check runs, statuses, and deployments when relevant.
-3. Inspect relevant code outside the diff to verify call sites, contracts,
-   migrations, permissions, and established patterns.
-4. Analyze the change with `references/review-criteria.md`. Prefer concrete
-   product-impacting findings over stylistic commentary.
-5. Run only the individual tests and narrowly scoped static checks needed to
-   establish confidence, following the workspace no-full-suite rule and the
-   repository's local contribution instructions.
-6. Verify each finding against the head revision. Cite a precise path and line
-   for every code finding and avoid duplicating an already resolved comment.
-7. Draft the GitHub review using the format below. Use `Blocker`, `Important`,
-   `Nit`, and `Question` consistently with the reference criteria.
-8. Re-read the remote PR head SHA. If it changed, refresh the diff and
-   revalidate every finding before submission.
-9. Select `request-changes` when at least one verified finding is classified
-   as `Blocker`. Select `comment` when there is no `Blocker`, including when
-   there are only Important, Nit, or Question findings, or no findings. Never
-   select approval.
-10. Submit exactly one GitHub review with the selected mode. Include targeted
-    inline comments in that review when they make a fix easier to understand.
-11. Return a concise summary with the submitted mode, finding counts,
-    validation performed, PR link, and any blocker. Do not paste a long review
-    when the GitHub link is sufficient.
-
-## GitHub data requirements
-
-Use the GitHub tooling configured by the repository to:
-
-- get a pull request with base/head revisions and metadata;
-- list or retrieve changed files and the complete diff;
-- list commits, reviews, review threads, and conversation comments;
-- list check runs and statuses for the PR head SHA;
-- list deployments for the PR head SHA when the repository uses them;
-- submit a pull request review, including inline comments and its event mode.
-
-Retrieve all pages of files, commits, and comments. Do not silently omit
-evidence when an operation is missing. Revalidate the remote head immediately
-before publication. Coolify preview URLs are expected only for
-`citipo/openaction-europe`; for other repositories, do not wait for them,
-request changes because they are absent, or include them in the final summary.
+Coolify preview URLs exist only for `citipo/openaction-europe`; for other repositories, never wait for them, request
+them, or mention them.
 
 ## Review format
-
-Use this structure for the GitHub review body:
 
 ```markdown
 ## Summary
@@ -112,17 +61,5 @@ Use this structure for the GitHub review body:
 - <effective design, test, or clarity choice>
 ```
 
-Skip empty severity and optional sections. When no actionable issue exists,
-write `No actionable findings.` under `Findings`.
-
-## Guardrails
-
-- Never modify the implementation during a review unless the user separately
-  asks for fixes.
-- Do not expose secrets, personal data, private customer details, or raw
-  internal logs in GitHub or the final summary.
-- Distinguish verified defects from questions and low-confidence concerns.
-- Review the changed behavior, not the author; keep feedback direct and
-  respectful.
-- Confirm that the submitted mode is `request-changes` if and only if the
-  review contains at least one `Blocker`; otherwise confirm `comment`.
+Skip empty sections. With no actionable issue, write `No actionable findings.` under `Findings`. Separate verified
+defects from questions, and review the change, not its author.
