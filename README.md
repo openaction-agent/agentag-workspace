@@ -24,10 +24,9 @@ Then authenticate Codex:
 codex login
 codex mcp add sentry --url https://mcp.sentry.dev/mcp
 codex mcp add linear --url https://mcp.linear.app/mcp
-codex mcp add github --url https://api.githubcopilot.com/mcp/ --bearer-token-env-var GITHUB_PAT_TOKEN
 ```
 
-And add GITHUB_PAT_TOKEN env var (with token) to your .bashrc file.
+Then authenticate the forge CLIs with `gh auth login` and `fj auth login`.
 
 ## Configure OpenAction instance MCPs
 

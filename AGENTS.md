@@ -35,7 +35,8 @@ successful.
 
 ## Tools and repositories
 
-* `git`, Linear MCP (roadmap and tasks), Sentry MCP (production errors), GitHub MCP, and the OpenAction instance MCPs.
+* `git`, `gh` (GitHub CLI), `fj` (Forgejo CLI), Linear MCP (roadmap and tasks), Sentry MCP (production errors), and
+  the OpenAction instance MCPs.
 * `playwright-cli` for browser automation. Check that it is callable before use; if it is not, report the browser
   task as blocked instead of installing it or using another tool.
 * Repositories, cloned under `codebases/` in the current directory when needed (`openaction-europe` by default):
@@ -68,10 +69,12 @@ reads for simple lookups.
   recipients, sending, and scheduling before `campaigns_delivery`.
 - If the MCP lacks an operation, use a permitted fallback such as the UI and report it.
 
-## GitHub and Git
+## Code forges and Git
 
-Prefer the GitHub MCP for repository, PR, review, comment, check, and deployment operations. Paginate complete results,
-and re-read the PR head SHA before publishing a review or declaring work ready.
+Use the `gh` CLI for GitHub repositories and the `fj` CLI for repositories hosted on Forgejo: PRs, reviews, comments,
+checks, CI runs, and deployments. Do not use a GitHub MCP server. Skills describe GitHub workflows; apply the same
+steps with `fj` on Forgejo. Retrieve complete paginated results, and re-read the PR head SHA before publishing a review
+or declaring work ready.
 
 Use `git` for local operations, fetches, and pushes. When a task requires rewriting a branch, an exact
 `git push --force-with-lease=<ref>:<expected-sha>` is authorized without further confirmation; never push with an
@@ -83,10 +86,10 @@ This policy applies to every task; skills and repository instructions may narrow
 
 - Never run a full test suite locally, even when a repository documents it as the default: it is too heavy for this
   server. Run only the test files or cases, and the formatters, linters, and static checks, scoped to the change. If a
-  command cannot be narrowed, skip it, say so, and rely on GitHub CI.
+  command cannot be narrowed, skip it, say so, and rely on CI.
 - After each push that triggers CI, follow CI for the pushed head SHA to its result. If CI was not triggered, check the
   workflow trigger, branch, and SHA. If it takes abnormally long, alert the user and do not claim success.
 - When CI fails, fix every in-scope failure, rerun the focused local checks, push, and follow CI again.
-- To inspect a failure, list the workflow runs, then the failed run's jobs, and read each failed job with
-  `get_job_logs` (`return_content=true`, `tail_lines=200`), increasing `tail_lines` only when needed. Never fetch full
-  logs or the log archive, and summarize failures instead of pasting logs.
+- To inspect a failure, find the run for the pushed SHA, list its failed jobs, and read only the last 200 lines of
+  each failed job's log (for example `gh run view --job <id> --log-failed | tail -n 200`), reading further back only
+  when needed. Never print full logs or download the log archive, and summarize failures instead of pasting logs.
