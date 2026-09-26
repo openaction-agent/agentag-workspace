@@ -1,6 +1,6 @@
 # OpenAction agent workspace environment
 
-This repository contains the OpenAction Agent workspace environment (provisioning, skills, sub agents, ...). 
+This repository contains the OpenAction Agent workspace environment (provisioning, skills, sub agents, ...).
 
 ## Supported system
 
@@ -10,16 +10,13 @@ This repository contains the OpenAction Agent workspace environment (provisionin
 
 ## Provision the VPS
 
-Clone the repository as the user that will run Codex, then run:
-
-```bash
-./bin/provision.sh
-```
+Clone the repository as the user that will run Codex, install a coding harness (Codex, Claude Code, ...), and run
+[PROVISION.md](PROVISION.md) as a prompt in it.
 
 ## Finish the setup
 
-Reconnect over SSH (or start a new login shell) so the MetaMCP environment variable and, for non-root users, 
-Docker group membership take effect. 
+Start a new login shell (or reconnect over SSH) so environment changes and, for non-root users, Docker group
+membership take effect.
 
 Then authenticate Codex:
 
@@ -27,10 +24,9 @@ Then authenticate Codex:
 codex login
 codex mcp add sentry --url https://mcp.sentry.dev/mcp
 codex mcp add linear --url https://mcp.linear.app/mcp
-codex mcp add github --url https://api.githubcopilot.com/mcp/ --bearer-token-env-var GITHUB_PAT_TOKEN
 ```
 
-And add GITHUB_PAT_TOKEN env var (with token) to your .bashrc file.
+Then authenticate the forge CLIs with `gh auth login` and `fj auth login`.
 
 ## Configure OpenAction instance MCPs
 

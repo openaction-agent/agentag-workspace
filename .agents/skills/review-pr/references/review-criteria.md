@@ -1,68 +1,56 @@
 # Review Criteria
 
-Use this checklist while analyzing the PR diff and related context.
+Start from the accepted behavior in the linked Linear issue and its latest comments, and check both the changed lines
+and the surrounding code.
 
-Start from the accepted behavior in the linked Linear issue and its latest
-comments. Check both the changed lines and the surrounding implementation.
+## 1. Functional correctness
 
-## 1. Functional Correctness
+- The change solves the problem stated in the PR and the Linear issue.
+- Control flow, null/empty handling, and boundary conditions are correct.
+- Adjacent behavior and call sites do not regress.
+- Migrations and configuration changes are safe for existing environments.
 
-- Verify the change solves the stated problem in PR title/body and linked
-  Linear issue when present.
-- Check control flow, null/empty handling, and boundary conditions.
-- Look for regressions in adjacent behavior and call sites.
-- Confirm migrations/config changes are safe for existing environments.
+## 2. Security and data safety
 
-## 2. Security and Data Safety
+- Injection, unsafe deserialization, and authorization or permission gaps.
+- Handling of secrets, tokens, and personal data in code and logs.
+- Input validation and output escaping.
+- Dangerous defaults, overly broad permissions, and missing safeguards.
 
-- Identify injection risks, unsafe deserialization, and auth/permission gaps.
-- Check handling of secrets, tokens, and PII in code and logs.
-- Verify user input is validated and output is escaped where required.
-- Flag dangerous defaults, overly broad permissions, and missing safeguards.
+## 3. Performance and scalability
 
-## 3. Performance and Scalability
+- N+1 queries, unbounded loops, and repeated expensive work.
+- Network, file, or database calls in hot paths.
+- Caching and pagination when data volume can grow.
+- Algorithmic complexity changes.
 
-- Check for N+1 queries, unbounded loops, and expensive repeated work.
-- Review network/file/database calls inside hot paths.
-- Validate caching and pagination strategy when data volume can grow.
-- Evaluate algorithmic complexity changes.
+## 4. Reliability and operations
 
-## 4. Reliability and Operations
+- Failure paths, retries, and timeouts.
+- Idempotency of jobs and commands that may re-run.
+- Useful logs, metrics, and error context.
+- Health, readiness, or background task behavior when relevant.
 
-- Verify failure paths, retries, and timeout behavior.
-- Check idempotency for jobs/commands that may re-run.
-- Validate observability: useful logs, metrics hooks, and error context.
-- Confirm health/readiness or background task behavior when relevant.
+## 5. Readability and maintainability
 
-## 5. Readability and Maintainability
+- Clear naming, structure, and abstractions; no duplicated logic or hidden coupling.
+- No unnecessary few-line private methods: prefer inline logic unless extraction clearly improves reuse or
+  readability.
+- Backward compatibility of public contracts and interfaces.
+- Docs and comments updated for non-obvious behavior.
 
-- Ensure naming, structure, and abstractions are clear.
-- Detect duplicated logic and hidden coupling.
-- Avoid unnecessary few-line private methods; prefer inline logic unless
-  extraction clearly improves reuse or readability.
-- Check backward compatibility for public contracts and interfaces.
-- Verify docs/comments are updated for non-obvious behavior.
+## 6. Testing
 
-## 6. Testing and Validation
+- Tests cover happy paths, edge cases, and failure paths, with meaningful assertions that are not overly tied to the
+  implementation.
+- Missing tests are called out when the risk is non-trivial.
+- CI has no failing or skipped critical jobs.
 
-Apply the testing and CI policy in the workspace root `AGENTS.md`: run only
-focused local tests and use bounded GitHub MCP job logs when inspecting CI
-failures.
+## Severity
 
-- Confirm tests cover happy paths, edge cases, and failure paths.
-- Validate assertions are meaningful and not overly implementation-specific.
-- Check that missing tests are called out when risk is non-trivial.
-- Cross-check CI check results for failing or skipped critical jobs.
-
-## Severity Mapping
-
-- Blocker: must be fixed before merge; risk of bugs, data loss, or security
-  issues.
+- Blocker: must be fixed before merge; risk of bugs, data loss, or security issues.
 - Important: should be fixed before merge; high-confidence quality risk.
-- Nit: optional polish; no material product risk.
+- Nit: optional polish with no material product risk.
 - Question: clarification needed before confidence is high.
-- Praise: highlight effective design, testing, or clarity choices.
 
-Do not inflate severity. Report a finding only when the problem is reproducible
-or supported by a concrete execution path; use a question when missing context
-prevents that conclusion.
+Do not inflate severity. Report a finding only when a concrete execution path supports it; otherwise ask a question.

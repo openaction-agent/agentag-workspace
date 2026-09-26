@@ -5,60 +5,39 @@ description: Prepare and save an implementation-ready technical specification fo
 
 # Specify Linear Issues for Implementation
 
-Turn Linear issues into implementation-ready specifications and save them in
-Linear.
+Turn one or more Linear issues (`OPE-123` or `OPE-123,OPE-456`) into implementation-ready specifications saved in the
+issue body. Ask only when an issue or repository cannot be resolved unambiguously.
 
-## Inputs
+## Rules
 
-Require one or more Linear issue IDs, such as `OPE-123` or
-`OPE-123,OPE-456`. Ask only when an issue or repository cannot be resolved
-unambiguously.
-
-## Operating rules
-
-- Follow the testing, Git, and CI policy in the workspace root `AGENTS.md`.
-  This workflow is read-only for code: do not run tests, commit, or push, and
-  never prescribe a full local suite in the generated specification.
-- Follow the repository's `AGENTS.md` and local contribution instructions.
-- Run from the relevant repository checkout and preserve unrelated changes.
-  Treat code inspection as read-only: do not edit code or push branches while
-  preparing a specification.
-- Use the GitHub and Linear access available in the local environment. Require
-  enough access to read and update every issue and inspect linked context; stop
-  and report a missing capability that prevents completion.
+- Follow the root `AGENTS.md` and the repository's instructions.
+- This workflow is read-only for code: do not edit, run tests, commit, or push. Preserve unrelated local changes.
+- Stop and report if Linear or GitHub access is not enough to read and update every issue.
 
 ## Workflow
 
-1. Read each issue's title, body, status, labels, links, attachments, and all
-   comments. Treat later clarifications as authoritative.
+For each issue:
+
+1. Read the title, body, status, labels, links, attachments, and all comments; later clarifications win.
 2. Move the issue to `Specification in progress`.
-3. Resolve the relevant repository from issue context and links. Fetch the
-   latest `main` without discarding local work.
-4. Inspect the implementation on `origin/main`, including adjacent behavior,
-   tests, migrations, configuration, and established conventions.
-5. Extract only implementation-relevant facts and decisions that are not
-   already clear from the issue: current code paths, ownership boundaries,
-   contracts, constraints, risks, edge cases, and focused validation. Ask the
-   user only when a decision materially changes the scope or product behavior.
-6. Draft one concise English specification per issue with the template below.
-   Complement the issue; do not repeat its title, problem statement, requested
-   behavior, acceptance criteria, customer context, or discussion. Keep lines
-   near 80 characters when practical.
-7. Re-read the issue and relevant code to verify every file reference and
-   technical claim.
-8. Preserve the existing issue body. Replace an existing generated
-   specification for that issue; otherwise append the new one in a fenced
-   Markdown block. Do not post the specification as a comment.
-9. Move the issue to `Spec to review` only after its body update succeeds.
-10. Return a concise summary with issue links, repository, important decisions,
-    and any unresolved question.
+3. Resolve the repository and fetch the latest `main` without discarding local work.
+4. Inspect the code on `origin/main`: the affected paths, adjacent behavior, tests, migrations, configuration, and
+   conventions.
+5. Write a concise English specification with the template below. It complements the issue: add implementation
+   facts and decisions (code paths, boundaries, contracts, constraints, risks, edge cases, focused tests) without
+   repeating the issue's problem, requested behavior, acceptance criteria, or discussion. Ask the user only when a
+   decision materially changes scope or product behavior. Keep lines near 80 characters.
+6. Re-read the issue and code to verify every file reference and technical claim.
+7. Keep the existing issue body. Replace a previously generated specification, or append the new one in a fenced
+   Markdown block. Do not post it as a comment.
+8. Once the body update succeeds, move the issue to `Spec to review`.
+
+Reply with the issue links, repository, important decisions, and open questions.
 
 ## Specification template
 
-Use the verified `origin/main` commit as the baseline. Keep `Implementation
-context`, `Implementation design`, and `Validation`. Include the other sections
-only when they add concrete implementation information; do not emit empty
-headings or generic boilerplate.
+Use the verified `origin/main` commit as the baseline. `Implementation design`, `Validation`, and `Implementation
+context` are required; include the other sections only when they add concrete information.
 
 ```markdown
 # Implementation design
@@ -86,8 +65,7 @@ headings or generic boilerplate.
   assertion to add or update>
 * `<focused command>`: <what it validates; include only commands verified for
   this repository>
-* <Mention Coolify preview validation only for `citipo/openaction-europe`.
-  Other projects must not depend on preview URLs.>
+* <Mention Coolify preview validation only for `citipo/openaction-europe`.>
 
 # Scope and open decisions
 
@@ -106,20 +84,6 @@ Repository: <owner/repository>
   implementation design.>
 ```
 
-Do not repeat the generic branch, formatting, PR, CI, or Linear lifecycle in
-the generated specification. The `implement-issue` skill owns that workflow and
-uses this specification for issue-specific technical guidance.
-
-## Quality check
-
-Before updating Linear, verify that the specification:
-
-- matches the issue and latest discussion and is grounded in the current
-  codebase, with concrete anchors and scenario-level tests;
-- names only focused local validation and never prescribes a full test suite;
-- adds implementation guidance rather than paraphrasing the issue, separating
-  verified behavior, proposed design, and open questions;
-- covers relevant contracts, data, security, compatibility, edge cases, and
-  scope without boilerplate;
-- contains no sensitive or irrelevant details and is actionable without
-  prescribing incidental edits or duplicating the generic workflow.
+Leave out the generic branch, PR, CI, and Linear workflow, which the `implement-issue` skill owns, and never prescribe
+a full test suite. The specification must be grounded in the current code, separate verified behavior from proposals
+and open questions, and contain no sensitive or irrelevant details.
