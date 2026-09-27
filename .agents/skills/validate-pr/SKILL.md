@@ -8,24 +8,19 @@ description: "Functionally validate an OpenAction implementation, from a Linear 
 Validate `citipo/openaction-europe` implementations against their accepted behavior in the Coolify preview. Other
 repositories have no preview: only move their Linear issue to `To validate`.
 
-The input is a Linear issue ID (`OPE-123`), a PR number (`#123`, optionally with `owner/repo`), or a PR URL. Ask only
-when it matches several plausible PRs.
+The input is a Linear issue ID (`OPE-123`), a PR number (`#123`, optionally with `owner/repo`), or a PR URL.
 
 ## Rules
 
-- Follow the root `AGENTS.md` (including its CI log rules) and the repository's instructions. Do not modify
-  implementation code, commit, or push.
-- Stop and report if GitHub or Linear access is not enough to read the full context and publish comments and statuses.
-- Use the `playwright-cli` skill for every browser operation. If `command -v playwright-cli` fails, report the
-  validation as blocked; do not install it or substitute another tool (`npx`, a browser connector, `curl`, ...).
-- Test only on preview environments, never on production or with production data.
+- Follow the root `AGENTS.md`, the main reference for Linear, forges, Git, and browser validation (including the
+  result statuses); this skill only adds the preview validation workflow.
+- Use the `playwright-cli` skill for browser commands. Do not modify implementation code, commit, or push.
 
 ## Workflow
 
 1. Resolve the Linear issue (for a PR input, from the PR's links); if none can be found, ask for its ID. Immediately
    move it to `Validation in progress` and confirm the update before doing anything else.
-2. Read the complete issue (comments, links, attachments) and its PR: body, head SHA, diff, comments, checks, and
-   statuses. The latest Linear clarification defines the accepted behavior; note any disagreement with the PR.
+2. Read the complete issue and its PR.
 3. If the repository is not `citipo/openaction-europe`, move the issue to `To validate`, report that preview
    validation does not apply, and stop.
 4. Prepare the checkout and fixtures, the journey, and the preview URLs (sections below), then run the journey.
@@ -38,9 +33,8 @@ when it matches several plausible PRs.
 
 ## Checkout and fixtures
 
-1. Check out `citipo/openaction-europe` under `codebases` at the exact PR head SHA, in a clean detached checkout or
-   worktree if the existing one is dirty or elsewhere. Preserve unrelated work, and never use a stale checkout or the
-   GitHub diff instead of the source.
+1. Check out `citipo/openaction-europe` at the exact PR head SHA, in a clean detached checkout or worktree. Never
+   use a stale checkout or the GitHub diff instead of the source.
 2. Read the repository instructions, then the preview bootstrap and fixtures (`console/bin/setup-preview`,
    `console/src/DataFixtures/TestFixtures.php`, `console/src/DataFixtures/DevFixtures.php`, and related helpers) to
    find which fixtures the preview loads.
@@ -63,45 +57,25 @@ when it matches several plausible PRs.
 - Use only URLs from the Coolify bot comment for this PR and head, never derived, edited, or copied from another PR.
   Match each to its app (`console`, `public`, `platform`, `mobilisation`) and use only those the journey needs. A
   missing, ambiguous, stale, unreachable, or unsafe URL blocks its path.
-- A fresh Console session starts on the login page; that is expected. Log in through the UI with the preview fixture
-  credentials, which are authorized only for that preview. Never write them in snapshots, screenshots, artifacts,
-  GitHub, Linear, or the reply.
+- A fresh Console session starts on the login page; that is expected. Log in with the preview fixture credentials,
+  which are authorized only for that preview.
 - Authentication is blocked only if the fixture account is absent, its login is rejected, permissions are missing,
   2FA cannot be avoided, or the preview did not load the fixtures. Keep evidence of the failed attempt.
 
 ## Running the journey
 
-1. Use one isolated in-memory named session per app (for example `validate-pr-123-console`), with no persistent
-   profile unless the user provides an authorized one.
+1. Name sessions after the PR and app (for example `validate-pr-123-console`).
 2. After login, confirm access to the expected organization and records.
 3. Create any run-owned data through the prescribed UI steps with its unique value and verify the result. Do not
-   replace it with shared fixtures, guess fields, or use an API.
-4. Follow the journey exactly through visible UI controls, without JavaScript evaluation, storage edits, request
-   mocking, or API calls.
-5. After each meaningful action, verify the visible state with a focused snapshot or read-only inspection, including
-   persistence after navigation or reload when relevant.
-6. Run the adjacent regression paths the same way, proportionate to the change.
-7. After each path, check `playwright-cli console` and `playwright-cli requests`, correlate errors with actions, and
-   tell known preview noise from introduced defects.
-8. Keep concise evidence (app and URL, data used, key actions, outcome, relevant errors, a focused screenshot or
-   snapshot when useful) without tokens, credentials, personal data, or unrelated logs.
-9. Do not delete run-owned data without the user's confirmation, and never delete shared fixtures or pre-existing
-   records. Record created data so it can be cleaned up later.
-10. Close every browser session and leave no authentication state or sensitive artifact behind.
+   replace it with shared fixtures or guess fields.
+4. Follow the journey exactly, then run the adjacent regression paths the same way, proportionate to the change.
+5. Record created data so it can be cleaned up later.
 
 ## Result
 
-- `PASSED`: every required path ran on the preview with its data, all outcomes matched, and no relevant introduced
-  console or network failure appeared.
-- `FAILED`: an outcome is wrong, a regression is reproduced, or a console error or failed request shows a defect.
-- `BLOCKED`: a required PR, URL, fixture, authorization, safe action, or `playwright-cli` is unavailable. For
-  authenticated paths, this requires fixture discovery and a failed login attempt (or a precise reason why none was
-  possible).
-
-Overall, any failed path means `FAILED` (list blocked paths too); otherwise any blocked path means `BLOCKED`. Never
-report `PASSED` from code inspection alone.
-
-Before publishing, re-read the PR head SHA; if it changed, refresh and rerun the affected paths.
+Use the statuses of the root `AGENTS.md`. A blocked authenticated path additionally requires fixture discovery and a
+failed login attempt (or a precise reason why none was possible). If the PR head SHA changed before publishing, rerun
+the affected paths.
 
 Reply with:
 

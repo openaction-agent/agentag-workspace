@@ -10,17 +10,17 @@ issue body. Ask only when an issue or repository cannot be resolved unambiguousl
 
 ## Rules
 
-- Follow the root `AGENTS.md` and the repository's instructions.
-- This workflow is read-only for code: do not edit, run tests, commit, or push. Preserve unrelated local changes.
-- Stop and report if Linear or GitHub access is not enough to read and update every issue.
+- Follow the root `AGENTS.md`, the main reference for Linear, forges, Git, testing, and CI; this skill only adds
+  the specification workflow and template.
+- This workflow is read-only for code: do not edit, run tests, commit, or push.
 
 ## Workflow
 
 For each issue:
 
-1. Read the title, body, status, labels, links, attachments, and all comments; later clarifications win.
+1. Read the whole issue.
 2. Move the issue to `Specification in progress`.
-3. Resolve the repository and fetch the latest `main` without discarding local work.
+3. Resolve the repository and fetch the latest `main`.
 4. Inspect the code on `origin/main`: the affected paths, adjacent behavior, tests, migrations, configuration, and
    conventions.
 5. Write a concise English specification with the template below. It complements the issue: add implementation
@@ -65,7 +65,6 @@ context` are required; include the other sections only when they add concrete in
   assertion to add or update>
 * `<focused command>`: <what it validates; include only commands verified for
   this repository>
-* <Mention Coolify preview validation only for `citipo/openaction-europe`.>
 
 # Scope and open decisions
 

@@ -20,13 +20,13 @@ The upstream is always `citipo/openaction-europe`, and both branches are always 
 
 ## Rules
 
-- Follow the root `AGENTS.md` and the repository's instructions.
-- Work from a checkout with remotes for the fork and Europe. Preserve unrelated changes and use an isolated worktree
-  when the checkout is not clean.
+- Follow the root `AGENTS.md`, the main reference for Linear, forges, Git, testing, and CI; this skill only adds
+  the fork sync workflow. The sync request authorizes rewriting the fork's `main`, under the branch-rewrite rules
+  (backup, lease, moved head).
+- Work from a checkout with remotes for the fork and Europe.
 - Stop and report if the available context is not enough to classify fork-specific commits safely.
 - Cherry-pick fork-only commits by default. Rebase only when the whole fork-only series is linear, cohesive, and
   mechanical to replay, and explain why first.
-- The sync request authorizes the final leased push to the fork's `main` without further confirmation.
 
 ## Check repository identity
 
@@ -48,8 +48,8 @@ The upstream is always `citipo/openaction-europe`, and both branches are always 
 
 ## Back up
 
-Create `backup/main-before-europe-sync-<timestamp>` at `ORIGINAL_FORK_SHA`, push it to the fork, and verify it locally
-and remotely before rewriting anything.
+Create the backup ref `backup/main-before-europe-sync-<timestamp>` at `ORIGINAL_FORK_SHA` in the fork before
+rewriting anything.
 
 ## Rebuild
 
@@ -58,7 +58,7 @@ and remotely before rewriting anything.
    understood.
 3. Skip a commit only when its exact upstream replacement is identified and no fork behavior is lost; record the SHA,
    intent, replacement, and reason.
-4. Keep meaningful commit boundaries and avoid unrelated cleanup.
+4. Keep meaningful commit boundaries.
 
 Resolve conflicts on your own only when the result is mechanical (equivalent edits, renames, formatting, moved
 context). In every case, keep both Europe and fork behavior where both are needed, check call sites, conditions, data
@@ -74,7 +74,7 @@ conflict. Record each conflicted file and why both sides are preserved.
 3. Every changed file relative to Europe `main` maps to the checklist, with no drift or conflict artifacts.
 4. Fork acceptance criteria and relevant upstream behavior still hold.
 5. Run focused tests covering fork behavior, relevant upstream behavior, conflicted paths, and changed contracts.
-6. Both remote `main` branches are still at `UPSTREAM_SHA` and `ORIGINAL_FORK_SHA`; if either moved, rebuild.
+6. Europe's remote `main` is still at `UPSTREAM_SHA`; if it moved, rebuild.
 
 ## Push
 
@@ -86,14 +86,8 @@ git push \
   <fork-remote> <sync-branch>:refs/heads/main
 ```
 
-Then confirm the fork's remote `main` equals the sync head and the backup is still available. Follow CI to its result:
-fix failures caused by the replay or fork integration, rerun focused tests, and push again with the same backup and
-lease checks. For infrastructure, flaky, or upstream failures that cannot be fixed in scope, retry when appropriate
-and report the blocker without claiming success.
-
-Never push `main` without a verified backup and an exact lease, discard fork behavior because upstream touched the
-same files, continue past an ambiguous functional conflict, or claim completion before the remote `main` and its
-required checks are verified.
+Then follow CI to a pass, fixing failures caused by the replay or fork integration. Never discard fork behavior
+because upstream touched the same files or continue past an ambiguous functional conflict.
 
 ## Output
 

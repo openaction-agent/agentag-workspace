@@ -10,36 +10,32 @@ product decision cannot be resolved unambiguously.
 
 ## Rules
 
-- Follow the workspace testing and CI policy in the root `AGENTS.md`, and the repository's own instructions.
-- Work from the relevant repository checkout. Preserve unrelated changes, use an isolated worktree when the checkout
-  is not clean, and never push directly to `main`.
-- Stop and report if GitHub or Linear access is not enough to read and update the issue, manage the PR, and inspect CI.
+- Follow the root `AGENTS.md`, the main reference for Linear, forges, Git, testing, and CI; this skill only adds
+  the issue-to-PR workflow.
 
 ## Workflow
 
-1. Read the whole issue: title, body, status, labels, links, attachments, and comments. Resolve the repository and
-   any linked PR.
+1. Read the whole issue, then resolve the repository and any linked PR.
 2. If the issue body contains a technical specification, use the latest one as implementation guidance; newer
    comments and the current code override stale details, and material divergences must be disclosed. Otherwise,
    derive the smallest safe implementation from the issue and the code, using the `specify-issue` skill as a
    reference, and ask only about ambiguities that change product behavior or scope.
 3. Move the issue to `Implementation in progres`.
-4. Fetch the latest `main` and create a branch from it following the repository's naming convention.
+4. Create a branch from the latest `main` following the repository's naming convention.
 5. Implement the complete change, following existing patterns, including migrations, permissions, translations,
    observability, or compatibility work when relevant.
-6. Add or update tests and run only the focused tests and checks for the change. Fix in-scope failures.
+6. Add or update tests, run the focused tests and checks for the change, and fix in-scope failures.
 7. Prepare the preview test journeys (see below).
 8. Review the diff for correctness, security, data safety, unintended scope, generated artifacts, and secrets, and
    reconcile it with the issue and specification.
-9. Commit with the issue ID, push, and open a draft PR whose title contains the issue ID and whose body follows the
-   format below. Follow CI for the pushed head.
-10. Run the `review-pr` skill on the draft PR. Fix every verified `Blocker` and `Important` finding, push, and
-    repeat until none remain. `Nit` findings do not block unless they reveal product risk.
-11. Make sure required CI passes on the latest head. For `citipo/openaction-europe`, also verify the Coolify preview
-    URLs (see below).
-12. Mark the PR ready, then post one Linear comment in the format below.
+9. Commit with the issue ID, push, and open a PR (not a draft) whose title contains the issue ID and whose body
+   follows the format below.
+10. Follow CI to a pass.
+11. Run the `review-pr` skill on the PR. Fix every verified `Blocker` and `Important` finding, push, follow CI to a
+    pass, and repeat until none remain. `Nit` findings do not block unless they reveal product risk.
+12. Post one Linear comment in the format below.
 13. Move the issue to `To validate` and reply with the issue and PR links, delivered behavior, tests run, CI state,
-    Europe preview state when applicable, and any follow-up.
+    and any follow-up.
 
 ## Preview test journeys
 
@@ -97,7 +93,7 @@ parcours nécessaires.>
 ### Validation
 
 - <test, formatter, or manual check run and its result>
-- <relevant CI state, and Europe preview state only when applicable>
+- <relevant CI state>
 
 ### Risks and continuation
 
@@ -119,28 +115,9 @@ awk '
 ' pr-body.md
 ```
 
-## Europe Coolify preview URLs
-
-Only for `citipo/openaction-europe`; other repositories have no preview URLs, so never wait for them or mention them
-in the PR, Linear, or final reply.
-
-Use only the URLs listed in the Coolify bot comment for this PR and head commit, never derived or guessed ones. Verify
-that the `console`, `public`, `platform`, and `mobilisation` URLs are present and reachable. If any is missing,
-ambiguous, unreachable, or not tied to the PR, keep the PR in draft and the issue in `Implementation in progres`, skip
-the Linear comment, and report what is missing.
-
 ## Linear comment
 
-Copy the first two PR sections verbatim, with nothing else. For `citipo/openaction-europe`, add:
-
-```markdown
-## Prévisualisations Coolify
-
-- Console : <URL de prévisualisation vérifiée>
-- Public : <URL de prévisualisation vérifiée>
-- Platform : <URL de prévisualisation vérifiée>
-- Mobilisation : <URL de prévisualisation vérifiée>
-```
+Copy the first two PR sections verbatim, with nothing else.
 
 ## Before handing off
 

@@ -7,36 +7,29 @@ description: "Review an OpenAction change from either a Linear issue ID or a Git
 
 Review one implementation in depth, publish the findings as a GitHub review, and summarize the result.
 
-The input is a Linear issue ID (`OPE-123`), a PR number (`#123`, optionally with `owner/repo`), or a PR URL. Ask only
-when an issue links to several plausible PRs. The review mode follows from the findings and cannot be overridden.
+The input is a Linear issue ID (`OPE-123`), a PR number (`#123`, optionally with `owner/repo`), or a PR URL. The
+review mode follows from the findings and cannot be overridden.
 
 ## Rules
 
-- Follow the root `AGENTS.md` (focused tests only, bounded CI logs) and the repository's instructions.
-- Do not modify or push the implementation unless the user separately asks for fixes. Use an isolated worktree when
-  local checks need a clean checkout.
-- Stop and report if GitHub or Linear access is not enough to read the full context and publish the review.
-- Never expose secrets, personal data, private customer details, or raw internal logs.
+- Follow the root `AGENTS.md`, the main reference for Linear, forges, Git, testing, and CI; this skill only adds
+  the review workflow and format.
+- Do not modify or push the implementation unless the user separately asks for fixes.
 
 ## Workflow
 
-1. Resolve the Linear issue and the PR from each other's links, and the repository. Read the full issue (comments,
-   links, attachments); its latest clarification defines the expected behavior. Note any disagreement with the PR.
-2. Record the base revision and head SHA, and read the PR metadata, full diff, commits, reviews, inline threads,
-   conversation, checks, statuses, and deployments when relevant, retrieving every page.
+1. Resolve and read the full Linear issue, the PR, and the repository.
+2. Record the base revision and head SHA.
 3. Inspect code outside the diff as needed: call sites, contracts, migrations, permissions, and patterns.
 4. Analyze the change with `references/review-criteria.md`, favoring product-impacting findings over style.
-5. Run only the focused tests and static checks needed for confidence.
+5. Run the focused tests and static checks needed for confidence.
 6. Verify each finding against the head revision, cite `path:line` for code findings, and skip issues already raised
    and resolved.
-7. Re-read the PR head SHA; if it changed, refresh and revalidate every finding.
+7. Re-read the PR head SHA; if it changed, revalidate every finding.
 8. Submit exactly one GitHub review, with inline comments where they make a fix clearer: `request-changes` if there is
    at least one `Blocker`, otherwise `comment`. Never approve.
 9. Reply with the review mode, finding counts, validation performed, PR link, and any blocker, without pasting the
    review.
-
-Coolify preview URLs exist only for `citipo/openaction-europe`; for other repositories, never wait for them, request
-them, or mention them.
 
 ## Review format
 

@@ -19,20 +19,14 @@ Ask only when the URL is missing or the plan has an ambiguity the UI cannot reso
 
 ## Rules
 
-- Follow the root `AGENTS.md`.
-- Use the `playwright-cli` skill for every browser operation. If `command -v playwright-cli` fails, report `BLOCKED`;
-  do not install it or use another tool.
-- Stay on the supplied host and the same-environment redirects or sibling apps reached through its navigation. Never
-  derive a target, go to production, or follow a link whose environment is uncertain.
-- Use visible UI controls only, without JavaScript evaluation, storage edits, request mocking, or API calls.
-- Do not modify code, repositories, Linear issues, PRs, or deployments.
+- Follow the root `AGENTS.md`, the main reference for browser validation (including the result statuses); this skill
+  only adds the preproduction workflow. Use the `playwright-cli` skill for browser commands.
+- Stay on the supplied host and the same-environment redirects or sibling apps reached through its navigation; never
+  follow a link whose environment is uncertain.
+- Do not modify code, repositories, Linear issues, or PRs.
 - Log in only on the supplied preproduction console, as `agent@openaction.eu` with the password stored in
-  `/root/openaction-preprod-password.txt`. Keep credentials out of messages, reports, screenshots, snapshots, traces,
-  filenames, and saved authentication state, and do not persist a browser profile.
+  `/root/openaction-preprod-password.txt`.
 - Send email only to `agent@openaction.eu`. Do not export CRM data, pay, publish content, or contact real users.
-- Never alter or delete pre-existing records. Create only uniquely named, synthetic test data, and delete it only
-  after capturing evidence and getting the user's confirmation; otherwise keep it and report its identifier.
-- Stop any action whose scope, recipient, environment, or effect is uncertain, and mark its path `BLOCKED`.
 
 ## Run
 
@@ -42,31 +36,20 @@ Ask only when the URL is missing or the plan has an ambiguity the UI cannot reso
 2. Find existing fixtures through read-only UI inspection; never assume a record exists. Mark a path `BLOCKED` when a
    module, permission, fixture, safe recipient, or product decision is missing.
 3. Use a run ID such as `VP-YYYYMMDD-HHMMSS` in every created record, email subject, and kept artifact.
-4. Open the exact URL in one isolated in-memory named session (for example `validate-preprod-YYYYMMDD-HHMMSS`),
-   capture the starting URL and a snapshot, log in through the form, and check the identity and environment.
-5. Run the paths in order, verifying the visible state after each meaningful action:
+4. Open the exact URL in a session named after the run (for example `validate-preprod-YYYYMMDD-HHMMSS`), capture the
+   starting URL and a snapshot, log in through the form, and check the identity and environment.
+5. Run the paths in order:
    - for searches and filters, check both the narrowed results and the reset, not just the controls;
-   - for created or edited data, check persistence after navigation or reload;
    - for email, check the exact recipient before sending, put the run ID in the subject, and verify the visible
      queued or sent confirmation. Claim inbox delivery only if the plan provides mailbox access and it was checked.
-6. After each path, check `playwright-cli console` and `playwright-cli requests`, correlate errors with actions, and
-   tell environment noise from real defects.
-7. Keep concise evidence, preferably snapshots and targeted screenshots, without secrets or unneeded personal data.
-8. Ask before cleaning up run-owned data; if confirmed, clean up through the UI. A failed cleanup does not change the
-   functional result but is reported as needing manual action.
-9. Close the session and remove any sensitive local artifact.
+6. Clean up run-owned data through the UI once confirmed. A failed cleanup does not change the functional result but
+   is reported as needing manual action.
+7. Remove any sensitive local artifact.
 
 ## Result
 
-- `PASSED`: every required action ran on the preprod, outcomes matched, and no relevant console or network defect
-  appeared.
-- `FAILED`: an outcome is wrong, a regression is reproduced, or a console error or failed request shows a defect.
-- `BLOCKED`: a required URL, module, fixture, authorization, safe action, or browser capability is unavailable.
-- `NOT APPLICABLE`: the UI clearly shows the path is outside this environment's product scope. Missing access or an
-  unexpected absence is `BLOCKED`.
-
-Overall, any failed path means `FAILED`; otherwise any blocked required path means `BLOCKED`; `PASSED` requires every
-required path to pass. Never infer success from code or page reachability.
+Use the statuses of the root `AGENTS.md`, plus `NOT APPLICABLE` when the UI clearly shows a path is outside this
+environment's product scope; missing access or an unexpected absence is `BLOCKED`.
 
 Reply following the workspace answer-language rule:
 
