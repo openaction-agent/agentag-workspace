@@ -45,7 +45,6 @@ successful.
   * git@github.com:citipo/openaction-lapres.git
   * git@github.com:citipo/sender.openaction.eu.git
   * git@github.com:citipo/lesecologistes.git
-  * git@github.com:citipo/git.openaction.eu.git
 
 If access to a forge, Linear, Sentry, an MCP, or another tool is not enough to read what the task needs or to publish
 its result, stop and report what is missing instead of working around it.
